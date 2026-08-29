@@ -1,222 +1,1149 @@
-# Toolbox
+# 🛠️ Toolbox
 
-Toolbox is a production-oriented Flask utility platform built around one idea: **simple tools for everyday tasks**. It provides 95 focused, account-free tool pages. Private text, calculations, generated secrets, notes, and finance data stay in the browser; bounded file operations use temporary request processing on the Flask server.
+A collection of fast, simple, and useful browser-based utilities for everyday tasks.
+
+Toolbox brings PDF and document processing, image utilities, text tools, generators, calculators, productivity tools, finance utilities, developer tools, and media utilities into a single web application.
+
+The goal is simple:
+
+**Find a tool → Provide your input → Process it → Download or use the result.**
+
+---
 
 ## Features
 
-All cards in the central registry have `status = available` and link to working tools. Related functions are deliberately consolidated when a toolkit is clearer than duplicate pages.
+- PDF Merger
+- PDF Splitter
+- Extract PDF Pages
+- Rotate PDF Pages
+- Reorder PDF Pages
+- PDF Page Preview
+- PDF Page Selection
+- PDF to Word
+- Word to PDF
+- PDF to Excel
+- Excel to PDF
+- Image Background Remover
+- Image Processing Utilities
+- Image Conversion Utilities
+- Text Utilities
+- Text-to-Speech
+- Developer Utilities
+- QR Code Generator
+- Barcode Generator
+- GIF Maker
+- Typing Speed Test
+- Loan Calculator
+- Expense Tracker
+- Financial Utilities
+- Global Tool Search
+- Category-based Navigation
+- Favorites
+- Recently Used Tools
+- Light Mode
+- Dark Mode
+- Responsive Design
+- Mobile-friendly Interface
 
-### PDF & documents
-
-- PDF merge; selected/range/every-page split with ZIP output; honest lossless stream/object compression
-- image-to-PDF for ordered PNG, JPEG, and WEBP inputs with A4, Letter, auto size, orientation, margins, contain, and cover options
-- reusable, real-page thumbnail previews for merge, split, rotate, delete, extract, reorder, and PDF image export, with bounded DPI, dimensions, and page counts
-- visual select/clear controls, per-page delete and rotation actions, drag-to-reorder pages/files, plus advanced one-based ranges
-- metadata inspection and editing
-- AES-256 password protection and legitimate unlock with the correct password
-- PDF structure, page count, encryption, metadata, and file-size validation/inspection
-- PDF-to-JPG and PDF-to-PNG for selected pages, returning a single image or ordered ZIP
-- PDF-to-DOCX text/supported-image extraction, structured PDF table-to-XLSX export, and faithful page-image-to-PPTX export
-- JPG-to-PDF and PNG-to-PDF focused entry points backed by the same validated image-to-PDF service
-- DOC/DOCX, XLS/XLSX, and PPT/PPTX to PDF through a detected LibreOffice installation, with isolated profiles, timeouts, randomized temporary paths, and a clear unavailable response
-
-### Images and media
-
-- ML background removal with lazy-loaded `rembg`
-- image compression, resize, format conversion, crop, rotate, flip, metadata inspection/stripping, and smallest-format optimization
-- browser-local image pixel color picker
-- ordered image-sequence GIF creation
-- gTTS speech generation with explicit external-provider disclosure
-- browser-local audio type, size, and duration inspection
-
-### Text and developer tools
-
-- word, character, sentence, paragraph, and reading-time analysis
-- upper, lower, title, and sentence case conversion
-- trimming, line deduplication/sorting/reversal, empty-line and extra-space removal, find/replace, text reversal, and line diff
-- Lorem Ipsum generation and safe lightweight Markdown preview
-- JSON format/minify/validate with error location, Unicode Base64, URL encoding, and HTML entities
-- SHA-256/384/512 hashing, Unix timestamp conversion, regex testing, query-string parsing/building
-- safe local JWT payload/header decoding with no signature-validity claim
-- HEX/RGB/HSL conversion and lightweight HTML/CSS/JavaScript structural formatting
-
-### Generators
-
-- QR and Code 128 barcode images
-- cryptographically secure password, username, UUID v4, integer, and random-string generation
-- HSL palettes, CSS gradients, Lorem Ipsum, and downloadable PNG favicons
-
-Password and random-value tools use `crypto.getRandomValues()` or `crypto.randomUUID()`; generated secrets are never submitted to Flask.
-
-### Calculators and converters
-
-- percentage, percentage-of, percentage-change, discount, tip, age, calendar-date difference, and time duration
-- general unit conversion plus dedicated length, weight, temperature, decimal/binary storage, and speed converters
-- fixed-rate loan, compound interest with monthly contributions, simple interest, GST/tax add/extract, profit margin/markup, and metric fuel-cost estimates
-
-Formulas and assumptions are shown with results. Financial output is general information, not advice or a guarantee.
-
-### Productivity and finance
-
-- typing speed test, Pomodoro timer, stopwatch with laps, countdown timer
-- persistent browser-local to-do list, autosaved notes, habit counters, random picker, and decision maker
-- local expense tracker with edit/delete/filter/month/category totals and CSV import/export
-- local budget planner, savings-goal estimate, EMI estimate, bill/tax/tip split, and manual-rate currency conversion
-
-### Platform experience
-
-- canonical registry metadata for names, slugs, categories, routes, search keywords, popularity, status, processing model, SEO titles/descriptions, and related tools
-- nine category landing pages, global instant search, `Ctrl/Cmd + K`, favorites, recently used tools, and related workflows
-- responsive layouts, semantic forms, keyboard focus, live status/error regions, and remembered light/dark theme
-- canonical and Open Graph metadata, JSON-LD, sitemap, robots file, and useful category/tool descriptions
-- lightweight PWA manifest and a service worker that caches public static assets only
-- disabled-by-default ad slots and a provider-neutral, data-minimal analytics event abstraction
-- polished 400, 404, 413, 429, and 500 handling
+---
 
 ## Architecture
 
 ```text
-app.py                         localhost development entry point
-config.py                      environment-backed limits and deployment settings
-app/__init__.py                Flask factory, extensions, errors, headers, logging
-app/registry.py                canonical metadata for all 95 public tool pages
-app/routes/                    thin page and processing endpoints
-app/services/                  bounded PDF, image, code, GIF, TTS, and file logic
-app/templates/                 Jinja pages and shared accessible components
-app/static/css/                responsive design system and theme variables
-app/static/js/                 small page/category modules and testable utility cores
-tests/                         route, service, security, edge, and Node-based JS tests
-instance/tmp/                  private generated workspaces; never publicly served
-```
+                              TOOLBOX
+                                 │
+                                 ▼
+                         Web Application
+                                 │
+                ┌────────────────┼────────────────┐
+                │                │                │
+                ▼                ▼                ▼
+             Search          Categories       Favorites
+                │                │                │
+                └────────────────┼────────────────┘
+                                 │
+                                 ▼
+                           Tool Selection
+                                 │
+        ┌────────────────────────┼────────────────────────┐
+        │                        │                        │
+        ▼                        ▼                        ▼
+     Documents                 Images                   Text
+        │                        │                        │
+        ▼                        ▼                        ▼
+  PDF Processing          Image Processing         Text Processing
+        │                        │                        │
+        └────────────────────────┼────────────────────────┘
+                                 │
+                                 ▼
+                          Tool Processing
+                                 │
+                                 ▼
+                         Preview / Result
+                                 │
+                                 ▼
+                           Download / Use
+Project Workflow
+                              User
+                               │
+                               ▼
+                        Open Toolbox
+                               │
+                               ▼
+                     Search / Browse Tools
+                               │
+                               ▼
+                      Select Required Tool
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+              ▼                ▼                ▼
+             PDF             Image             Text
+              │                │                │
+              ▼                ▼                ▼
+         Upload File      Upload File       Enter Text
+              │                │                │
+              ▼                ▼                ▼
+          Validate          Validate          Validate
+              │                │                │
+              └────────────────┼────────────────┘
+                               │
+                               ▼
+                         Process Input
+                               │
+                               ▼
+                         Generate Result
+                               │
+                               ▼
+                       Preview When Available
+                               │
+                               ▼
+                           Download
+Project Structure
+Toolbox/
+│
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── .env.example
+├── LICENSE
+│
+├── app/
+│   ├── ...
+│   └── ...
+│
+├── static/
+│   ├── css/
+│   ├── js/
+│   ├── images/
+│   └── ...
+│
+├── templates/
+│   ├── ...
+│   └── ...
+│
+├── tools/
+│   ├── pdf/
+│   ├── documents/
+│   ├── images/
+│   ├── text/
+│   ├── developer/
+│   ├── generators/
+│   ├── calculators/
+│   ├── productivity/
+│   ├── finance/
+│   └── media/
+│
+└── tests/
+    └── ...
 
-The Flask application factory and blueprints are preserved. Backend routes validate input and delegate processing to services. Browser tool pages use one generic Jinja shell plus separate text, developer, generator, calculator, productivity, finance, media, and image modules.
+The exact project structure may evolve as new tools and features are added.
 
-## Requirements and setup
+Tool Categories
+📄 PDF & Documents
 
-- Python 3.11 or newer
-- `pip`
-- Node.js only for optional JavaScript unit tests
-- Internet access for dependency installation
-- Internet access for gTTS requests
-- Internet access on the first `rembg` use unless the configured model is pre-provisioned
+Toolbox provides a collection of utilities for common PDF and document workflows.
 
-Windows PowerShell:
+PDF Merger
+PDF Splitter
+Extract PDF Pages
+Rotate PDF Pages
+Reorder PDF Pages
+PDF Page Preview
+PDF Page Selection
+PDF to Word
+Word to PDF
+PDF to Excel
+Excel to PDF
 
-```powershell
+The PDF interface provides visual page previews where supported, allowing users to select and manage pages before processing.
+
+🖼️ Images
+
+Image utilities for common image-processing tasks.
+
+Background Remover
+Image Processing
+Image Conversion
+Image Optimization
+📝 Text
+
+Text-based utilities for everyday use.
+
+Text Utilities
+Text Conversion
+Text-to-Speech
+💻 Developer
+
+Developer-focused utilities for common development, data-processing, and text-processing tasks.
+
+⚙️ Generators
+
+Toolbox provides generators for commonly required outputs.
+
+QR Code Generator
+Barcode Generator
+🧮 Calculators
+
+Utilities for everyday and financial calculations.
+
+Loan Calculator
+Financial Calculations
+Everyday Calculators
+⏱️ Productivity
+
+Tools designed for everyday productivity.
+
+Typing Speed Test
+Productivity Utilities
+💰 Finance
+
+Tools for personal finance and expense management.
+
+Expense Tracker
+Loan Calculator
+Financial Utilities
+🎞️ Media
+
+Media-processing utilities.
+
+GIF Maker
+Text-to-Speech
+Media Utilities
+PDF Processing
+
+PDF processing is one of the core capabilities of Toolbox.
+
+Supported workflows include:
+
+Merge multiple PDF files
+Split PDF files
+Extract selected pages
+Reorder PDF pages
+Rotate PDF pages
+Preview PDF pages
+Select pages visually
+Convert supported PDF documents
+Convert supported document formats to PDF
+PDF Page Preview
+
+Toolbox provides a visual PDF page-selection experience for supported tools.
+
+Instead of requiring users to manually enter page numbers, users can preview the pages and select the pages they want.
+
+Upload PDF
+    │
+    ▼
+Render PDF Pages
+    │
+    ▼
+Display Page Previews
+    │
+    ▼
+Select Required Pages
+    │
+    ▼
+Reorder / Configure
+    │
+    ▼
+Process PDF
+    │
+    ▼
+Generate Output
+    │
+    ▼
+Download
+
+This makes operations such as extraction, splitting, and page manipulation easier and more intuitive.
+
+Document Conversion
+
+Toolbox provides document conversion utilities for supported formats.
+
+Supported workflows include conversions between formats such as:
+
+PDF
+ │
+ ├── Word
+ │
+ └── Excel
+
+Word
+ │
+ └── PDF
+
+Excel
+ │
+ └── PDF
+
+Actual conversion capabilities depend on the processing libraries and configuration used by the deployed application.
+
+Image Processing
+
+Toolbox provides image utilities designed for common everyday workflows.
+
+Example workflow:
+
+Upload Image
+     │
+     ▼
+Validate Image
+     │
+     ▼
+Process Image
+     │
+     ▼
+Preview Result
+     │
+     ▼
+Download Image
+QR Code Generator
+
+The QR Code Generator allows users to provide supported content and generate a QR code.
+
+Typical workflow:
+
+Enter Content
+     │
+     ▼
+Configure Options
+     │
+     ▼
+Generate QR Code
+     │
+     ▼
+Preview
+     │
+     ▼
+Download
+Barcode Generator
+
+The Barcode Generator allows users to enter supported values and generate barcodes.
+
+Typical workflow:
+
+Enter Value
+     │
+     ▼
+Select Barcode Type
+     │
+     ▼
+Generate Barcode
+     │
+     ▼
+Preview
+     │
+     ▼
+Download
+GIF Maker
+
+The GIF Maker allows users to create animated GIFs from supported image inputs.
+
+Typical workflow:
+
+Upload Images
+      │
+      ▼
+Arrange Frames
+      │
+      ▼
+Configure Timing
+      │
+      ▼
+Generate GIF
+      │
+      ▼
+Preview
+      │
+      ▼
+Download
+Text-to-Speech
+
+The Text-to-Speech utility converts supported text input into spoken audio.
+
+Enter Text
+    │
+    ▼
+Select Available Options
+    │
+    ▼
+Generate Audio
+    │
+    ▼
+Preview
+    │
+    ▼
+Download / Use
+Typing Speed Test
+
+The Typing Speed Test measures typing performance through a timed typing exercise.
+
+The tool can provide metrics such as:
+
+Typing speed
+Accuracy
+Correct characters
+Incorrect characters
+Test duration
+
+Example workflow:
+
+Start Test
+    │
+    ▼
+Display Text
+    │
+    ▼
+User Types
+    │
+    ▼
+Track Performance
+    │
+    ▼
+Calculate Results
+    │
+    ▼
+Display Score
+Loan Calculator
+
+The Loan Calculator provides calculations for common loan scenarios.
+
+Depending on the available implementation, the calculator can provide:
+
+Monthly payment
+Total interest
+Total repayment
+Loan summary
+
+Example:
+
+Loan Amount
+      │
+      ▼
+Interest Rate
+      │
+      ▼
+Loan Term
+      │
+      ▼
+Calculate
+      │
+      ▼
+Monthly Payment
+      │
+      ▼
+Total Interest
+      │
+      ▼
+Total Repayment
+Expense Tracker
+
+The Expense Tracker provides a simple interface for recording and reviewing expenses.
+
+Typical workflow:
+
+Add Expense
+     │
+     ▼
+Enter Amount
+     │
+     ▼
+Select Category
+     │
+     ▼
+Save Expense
+     │
+     ▼
+Review Expenses
+     │
+     ▼
+Analyze Spending
+Search
+
+Toolbox provides global search functionality.
+
+Users can search for tools using:
+
+Tool name
+Task
+Category
+Utility type
+Keywords
+
+Example:
+
+User searches: "pdf"
+
+        │
+        ▼
+
+PDF Merger
+PDF Splitter
+PDF to Word
+PDF to Excel
+PDF Page Extractor
+...
+Categories
+
+Tools are organized into focused categories:
+
+PDF & Documents
+Images
+Text
+Developer
+Generators
+Calculators
+Productivity
+Finance
+Media
+
+The category navigation makes it easier to discover tools based on the type of task being performed.
+
+Favorites
+
+Frequently used tools can be added to Favorites for quick access.
+
+Example workflow:
+
+Open Tool
+   │
+   ▼
+Add to Favorites
+   │
+   ▼
+Tool Saved
+   │
+   ▼
+Access from Favorites
+Recently Used
+
+Toolbox provides a Recently Used section to make repeated workflows faster.
+
+Recently accessed tools can be displayed so users can quickly return to tools they have previously used.
+
+User Interface
+
+Toolbox uses a clean, minimal, utility-focused interface.
+
+The interface includes:
+
+Global search
+Category navigation
+Tool cards
+Favorites
+Recently Used
+PDF previews
+File upload interfaces
+Processing states
+Download actions
+Light mode
+Dark mode
+Responsive layouts
+
+The design focuses on making each utility easy to understand and use.
+
+Responsive Design
+
+Toolbox is designed for:
+
+Desktop
+   │
+   ├── Laptop
+   │
+   ├── Tablet
+   │
+   └── Mobile
+
+The interface adapts:
+
+Navigation
+Tool cards
+Forms
+Buttons
+PDF previews
+File upload areas
+Category navigation
+Tool layouts
+
+based on the available screen size.
+
+Theme Support
+
+Toolbox supports:
+
+☀️ Light Mode
+🌙 Dark Mode
+
+The theme selector is integrated into the application navigation.
+
+The interface is designed to maintain readability and consistent component styling across both themes.
+
+Tech Stack
+Programming Language
+Python
+Frontend
+HTML
+CSS
+JavaScript
+Backend
+Python-based Web Application
+File Processing
+
+The application uses specialized libraries and processing utilities for:
+
+PDF Processing
+Document Conversion
+Image Processing
+QR Code Generation
+Barcode Generation
+GIF Creation
+Audio Generation
+Calculations
+Data Processing
+
+The exact dependencies are maintained in:
+
+requirements.txt
+Installation
+Clone the Repository
+git clone <repository-url>
+
+cd Toolbox
+Create a Virtual Environment
+Windows
 python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
-python app.py
-```
 
-macOS/Linux:
+.venv\Scripts\activate
+macOS / Linux
+python -m venv .venv
 
-```bash
-python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-cp .env.example .env
+Install Dependencies
+pip install -r requirements.txt
+Environment Variables
+
+If environment variables are required, create a .env file in the project root.
+
+Example:
+
+SECRET_KEY=your_secret_key
+API_KEY=your_api_key
+
+Use .env.example as the template for required environment variables.
+
+Never commit the actual .env file.
+
+Run the Application
+
+Start the application using the configured application entry point.
+
+For example:
+
 python app.py
-```
 
-Open <http://127.0.0.1:5000>. Replace the example `SECRET_KEY`; never commit `.env`.
+Use the actual startup command configured in the repository.
 
-## Dependencies
+The application will then be available through the configured local development URL.
 
-- Flask, Jinja, Flask-WTF, and Flask-Limiter for the web layer, CSRF, and rate limiting
-- Pillow for validated raster transforms, image-to-PDF, and GIF output
-- pypdf for structural PDF processing and PyMuPDF for bounded page rendering and content extraction
-- python-docx, openpyxl, and python-pptx for practical DOCX, XLSX, and PPTX output
-- cryptography for strong AES-256 PDF encryption support in pypdf
-- qrcode and python-barcode for code images
-- rembg with the CPU inference extra for background removal
-- gTTS for external speech synthesis
-- pytest for automated verification
+Usage
+1. Open Toolbox
+        │
+        ▼
+2. Search or browse for a tool
+        │
+        ▼
+3. Select the required utility
+        │
+        ▼
+4. Upload a file or enter information
+        │
+        ▼
+5. Configure available options
+        │
+        ▼
+6. Process the input
+        │
+        ▼
+7. Preview the result
+        │
+        ▼
+8. Download or use the result
+Example Use Cases
+Merge PDFs
+Upload multiple PDFs
+        ↓
+Arrange files
+        ↓
+Merge
+        ↓
+Download combined PDF
+Extract PDF Pages
+Upload PDF
+        ↓
+Preview pages
+        ↓
+Select pages
+        ↓
+Generate PDF
+        ↓
+Download
+Remove Image Background
+Upload image
+        ↓
+Process image
+        ↓
+Preview result
+        ↓
+Download
+Generate QR Code
+Enter content
+        ↓
+Generate QR code
+        ↓
+Preview
+        ↓
+Download
+Generate Barcode
+Enter value
+        ↓
+Select format
+        ↓
+Generate barcode
+        ↓
+Download
+Typing Speed Test
+Start test
+        ↓
+Type displayed text
+        ↓
+Calculate speed and accuracy
+        ↓
+View results
+Expense Tracking
+Add expense
+        ↓
+Enter amount and category
+        ↓
+Save
+        ↓
+Review spending
+Security
 
-No database, frontend framework, task queue, or FFmpeg installation is required. LibreOffice is optional and only required for Word/Excel/PowerPoint-to-PDF tools.
+Because Toolbox processes user input and uploaded files, security is an important part of deployment.
 
-## Configuration
+Recommended security practices include:
 
-`.env.example` is the canonical safe configuration reference.
+Validate all user input
+Validate uploaded file types
+Enforce file-size limits
+Use secure temporary-file handling
+Remove temporary files after processing
+Prevent unauthorized access to uploaded files
+Keep credentials outside source code
+Use environment variables for secrets
+Keep dependencies updated
+Use HTTPS in production
+Implement rate limiting
+Configure request timeouts
+Configure secure HTTP headers
+Monitor application errors
 
-| Variable | Purpose |
-| --- | --- |
-| `FLASK_ENV` | `development`, `testing`, or `production` |
-| `SECRET_KEY` | Production CSRF/session-signing secret |
-| `BASE_URL` | Public canonical/sitemap origin |
-| `PRODUCT_TIER` | Future-ready `FREE`/`PRO` label; no current feature paywall |
-| `ADS_ENABLED` | Enables empty integration slots only; default `false` |
-| `ANALYTICS_PROVIDER` | Optional event integration label; empty is a no-op |
-| `MAX_CONTENT_LENGTH` | Maximum total HTTP request size |
-| `MAX_PDF_FILES`, `MAX_PDF_FILE_BYTES`, `MAX_PDF_PAGES` | PDF batch, byte, and page limits |
-| `PDF_PREVIEW_DPI`, `PDF_PREVIEW_MAX_WIDTH`, `PDF_PREVIEW_MAX_HEIGHT`, `PDF_PREVIEW_MAX_PAGES` | Bounded thumbnail rendering limits |
-| `MAX_CONVERSION_PAGES`, `MAX_CONVERSION_TOTAL_PIXELS` | PDF export page and aggregate raster limits |
-| `MAX_DOCUMENT_FILE_BYTES`, `DOCUMENT_CONVERSION_TIMEOUT_SECONDS` | Office upload and conversion runtime limits |
-| `LIBREOFFICE_PATH` | Optional explicit path to `soffice`/LibreOffice; otherwise auto-detected |
-| `MAX_IMAGE_FILES`, `MAX_IMAGE_BYTES`, `MAX_IMAGE_PIXELS`, `MAX_IMAGE_EDGE` | Image batch, byte, decode, and dimension limits |
-| `MAX_GIF_FRAMES`, `MAX_GIF_TOTAL_PIXELS` | GIF batch and aggregate-memory limits |
-| `MAX_QR_CHARS`, `MAX_BARCODE_CHARS`, `MAX_TTS_CHARS` | Text limits |
-| `TTS_TIMEOUT_SECONDS` | External gTTS timeout |
-| `REMBG_MODEL` | Lazy-loaded model; default `u2netp` |
-| `RATELIMIT_STORAGE_URI` | Limiter backend; process-local `memory://` by default |
-| `RATELIMIT_*` | Per-operation rate limits for expensive endpoints |
+Never commit:
 
-Invalid integer environment values fall back to bounded defaults. Production startup fails if the development secret remains configured.
+.env
+API Keys
+Passwords
+Private Keys
+Cloud Credentials
+Database Credentials
+User Uploaded Files
+Temporary Processing Files
+Privacy
 
-## Security and privacy
+Toolbox is designed to provide utility-focused workflows without requiring an account for normal usage.
 
-- CSRF protects state-changing routes; expensive endpoints have rate limits.
-- File extension, MIME metadata, magic bytes, actual parser/decoder output, bytes, pixels, edges, pages, file counts, preview dimensions, and aggregate raster/GIF pixels are bounded.
-- OOXML containers are checked for their expected internal structure and expansion size; legacy Office files require the OLE signature.
-- LibreOffice runs with an argument list (never a shell), a randomized input filename, an isolated temporary user profile, and a hard timeout. Its workspace is removed after success or failure.
-- Pillow decompression-bomb checks and PDF parser errors produce user-safe responses.
-- No request uses an uploaded filename as a filesystem path. Generated responses use `Cache-Control: no-store`.
-- Security headers include CSP, clickjacking, MIME-sniffing, referrer, permissions, and secure production cookie controls.
-- JWT decoding is local and explicitly unverified. Passwords and finance values stay in-browser.
-- TTS is the one external processing path; its page and data-handling page disclose this.
+File-processing behavior depends on the individual tool and deployment configuration.
 
-The service worker only handles same-origin GET requests under `/static/`. It never caches HTML tool sessions, uploads, generated PDFs/images/audio, API responses, or browser storage.
+Users should avoid uploading confidential or sensitive information unless they are comfortable with the application's current data-processing behavior.
 
-## Background removal and TTS
+Production deployments should configure appropriate:
 
-`rembg` loads only when the background-removal service is called. Its first request may download `REMBG_MODEL`; offline production deployments must pre-provision the model cache. CPU inference has a cold-start and can be slow for complex images.
+File retention policies
+Temporary file cleanup
+Upload limits
+Storage policies
+Logging
+Security controls
+Performance Considerations
 
-gTTS sends submitted text to Google's external service. Production must allow outbound HTTPS and set an appropriate timeout. Network/provider failures return a safe error; no synthetic result is substituted.
+File-processing operations can consume significant CPU, memory, and temporary storage.
 
-## Testing
+Production deployments should consider:
 
-```powershell
-.venv\Scripts\python.exe -m pytest -q
-```
+Maximum upload size
+Processing timeouts
+Concurrent requests
+Temporary storage usage
+Memory usage
+CPU usage
+Large PDF processing
+Large image processing
+Temporary file cleanup
+Static asset optimization
+Caching
 
-Tests generate and parse real PDFs, preview PNGs, ZIPs, DOCX, XLSX, PPTX, QR codes, barcodes, PNG/JPEG/WEBP images, transparency, GIFs, encryption, metadata, and page transformations. Conversion tests cover table detection, formula-safety boundaries, content validation, rate limiting, no-shell command construction, and temporary cleanup. LibreOffice itself is not required in CI: its process boundary is tested deterministically, while deployment can add an environment-specific integration test.
+As traffic increases, resource-intensive processing may be moved to:
 
-## Deployment
+Background Workers
+        │
+        ▼
+Job Queues
+        │
+        ▼
+Dedicated Processing Services
+Testing
 
-Set at least:
+Before deploying changes, verify the following.
 
-```dotenv
-FLASK_ENV=production
-SECRET_KEY=a-long-random-production-secret
-BASE_URL=https://tools.example.com
-```
+Application
+Application starts successfully
+Homepage loads correctly
+Navigation works
+Search works
+Categories work
+Favorites work
+Recently Used works
+Theme switching works
+PDF
+PDF upload works
+PDF preview works
+Page selection works
+Page ordering works
+PDF processing works
+PDF downloads work
+Images
+Image upload works
+Background removal works
+Image processing works
+Downloads work
+Generators
+QR generation works
+Barcode generation works
+Generated files can be downloaded
+Productivity
+Typing Speed Test works
+Results are calculated correctly
+Finance
+Loan Calculator works
+Expense Tracker works
+Media
+GIF Maker works
+Text-to-Speech works
+Responsive
 
-Run `app:create_app()` behind a production WSGI server and HTTPS reverse proxy; Flask's development server is not a production server. Give the process write access to `instance/` for rotating logs and private temporary workspaces. Use a supported shared Flask-Limiter backend for multiple workers, plan request/memory limits for Pillow, PyMuPDF, and rembg, pre-provision the model when outbound downloads are unavailable, and allow gTTS outbound HTTPS if that tool is enabled.
+Test on:
 
-For Office-to-PDF, install LibreOffice on the application host and ensure `soffice` is on `PATH`, or set `LIBREOFFICE_PATH` to the executable. The web-service account needs execute permission. Keep the configured timeout, request limits, and writable `instance/tmp/` storage in place.
+Desktop
+Tablet
+Mobile
+Themes
 
-## Known limitations and intentional exclusions
+Test:
 
-- PDF-to-DOCX preserves practical reading order and supported images, not every font, form field, column, or exact desktop-publishing layout.
-- PDF-to-XLSX only exports tables detected from PDF geometry. Image-only scans need OCR first, and documents without structured tables return an error instead of a fabricated spreadsheet.
-- PDF-to-PPTX creates one faithful page image per slide; source text and graphics are not editable PowerPoint objects.
-- Office-to-PDF is unavailable until LibreOffice is installed or configured on the server. Output fidelity depends on LibreOffice and the fonts available on that host.
-- Audio trimming is excluded because the project deliberately does not require FFmpeg or claim browser codec support it cannot guarantee.
-- Lossless pypdf compression does not degrade embedded images and may produce little or no reduction for already optimized PDFs; the UI reports actual sizes.
-- The code formatter is a lightweight structural formatter, not a standards-complete parser, linter, or minifier.
-- Currency conversion uses a rate entered by the user and never presents bundled values as live rates.
-- The PWA caches static application assets only; server-processed tools are not available offline.
-- All processing is synchronous and bounded; large-job queues, authentication, cloud history, and a database are intentionally outside this release.
+Light Mode
+Dark Mode
+Production Deployment
+
+Before deploying Toolbox publicly, configure the production environment appropriately.
+
+Important considerations include:
+
+HTTPS
+Production environment variables
+Secure secret management
+File upload limits
+Request size limits
+Temporary file cleanup
+Storage configuration
+Logging
+Monitoring
+Error tracking
+Rate limiting
+Request timeouts
+Secure HTTP headers
+Resource limits
+External service configuration
+Required system dependencies
+
+For document and image processing tools, make sure all required runtime and system-level dependencies are available in the production environment.
+
+Deployment Architecture
+
+A production deployment can follow a structure such as:
+
+                         Internet
+                            │
+                            ▼
+                     Reverse Proxy
+                            │
+                            ▼
+                     Web Application
+                            │
+             ┌──────────────┼──────────────┐
+             │              │              │
+             ▼              ▼              ▼
+        PDF Processing  Image Processing  Other Tools
+             │              │              │
+             └──────────────┼──────────────┘
+                            │
+                            ▼
+                     Temporary Storage
+                            │
+                            ▼
+                       Output File
+                            │
+                            ▼
+                         User
+
+For larger deployments, processing can be separated into dedicated workers.
+
+Development Guidelines
+
+When adding a new tool:
+
+Keep the interface consistent
+Use reusable components
+Validate all input
+Validate uploaded files
+Handle errors gracefully
+Avoid unnecessary dependencies
+Keep processing logic modular
+Maintain responsive behavior
+Support light and dark themes
+Add the tool to navigation
+Assign the correct category
+Add the tool to search
+Support Favorites where applicable
+Support Recently Used where applicable
+Update documentation
+Add tests where appropriate
+Contributing
+
+Contributions and suggestions are welcome.
+
+Create a feature branch:
+
+git checkout -b feature/new-tool
+
+Make your changes and test the application.
+
+Review changes:
+
+git status
+
+git diff
+
+Commit:
+
+git add .
+
+git commit -m "Add new utility"
+
+Push:
+
+git push origin feature/new-tool
+
+Then create a Pull Request.
+
+Contribution Guidelines
+
+When contributing:
+
+Keep the UI consistent with the existing design
+Avoid unnecessary dependencies
+Validate user input
+Validate uploaded files
+Handle errors gracefully
+Keep code maintainable
+Add tests where appropriate
+Update documentation
+Do not commit secrets
+Do not commit user-generated files
+Do not introduce breaking changes without documentation
+Roadmap
+Phase 1
+✓ Core Toolbox Interface
+✓ Tool Categories
+✓ Global Search
+✓ Favorites
+✓ Recently Used
+✓ Light / Dark Mode
+✓ Responsive Design
+✓ PDF Utilities
+✓ Image Utilities
+✓ Generators
+✓ Calculators
+Phase 2
+✓ More Document Conversions
+✓ More Image Utilities
+✓ Developer Utilities
+✓ Productivity Tools
+✓ Finance Utilities
+✓ Media Utilities
+Phase 3
+Advanced PDF Editing
+Batch Processing
+Improved PDF Preview
+Large File Processing
+Background Jobs
+Processing Queues
+Performance Optimization
+Monitoring
+Phase 4
+User Accounts
+Cloud Storage Integration
+Usage Analytics
+Public API
+Advanced Automation
+Premium Features
+Future Improvements
+
+Potential future improvements include:
+
+Additional PDF tools
+Advanced PDF editing
+More document conversions
+Batch file processing
+More image-processing utilities
+Additional developer tools
+More QR code options
+More barcode formats
+More calculators
+Additional productivity tools
+Additional finance tools
+Additional media utilities
+Improved PDF previews
+Background processing
+Job queues
+Cloud storage integration
+User accounts
+Usage analytics
+Public API
+Docker support
+CI/CD automation
+Advanced monitoring
+Improved SEO
+Progressive Web App support
+Rate limiting and abuse prevention
+CI/CD
+
+The project can be integrated with a CI/CD workflow to automate:
+
+Code Push
+    │
+    ▼
+Run Tests
+    │
+    ▼
+Lint / Validate
+    │
+    ▼
+Build
+    │
+    ▼
+Security Checks
+    │
+    ▼
+Deploy
+    │
+    ▼
+Production
+
+Recommended future CI/CD capabilities include:
+
+Automated testing
+Dependency checks
+Security scanning
+Build validation
+Automated deployment
+Rollback support
+Monitoring
+
+Production deployments should monitor:
+
+Application availability
+Request latency
+Error rates
+CPU usage
+Memory usage
+Storage usage
+Processing failures
+File-processing duration
+Traffic
+Resource consumption
+
+Monitoring becomes increasingly important as the number of users and processing workloads increases.
+
+Project Status
+
+Toolbox is an actively developed collection of browser-based utilities.
+
+The project is designed to continuously expand with additional tools while maintaining a simple, fast, and user-friendly experience.
+
+Current focus areas include:
+
+PDF & Documents
+Images
+Text
+Developer Tools
+Generators
+Calculators
+Productivity
+Finance
+Media
+License
+
+This project is licensed under the terms specified in the LICENSE file.
+
+Disclaimer
+
+Toolbox provides general-purpose utilities for everyday tasks.
+
+Users should verify important generated, converted, calculated, or processed results before relying on them for legal, financial, business, medical, or other critical purposes.
+
+The project does not guarantee that every conversion or generated result will be suitable for every use case.
+
+Author
+Satwik Myneni
+
+Built with Python and a passion for creating simple tools that solve everyday problems.
+
+⭐ Support
+
+If you find Toolbox useful, consider giving the repository a ⭐ on GitHub!
+
+Feedback, suggestions, bug reports, and contributions are welcome.
+
+🚀 Toolbox
+
+Simple Tools. Fast Workflows. One Toolbox.
