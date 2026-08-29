@@ -1,184 +1,153 @@
-/**
- * pdf.js — PDF Merger tool frontend.
- *
- * Supports drag-and-drop, multiple file selection, reordering, removing files,
- * and merging via server endpoint.
- */
 (function () {
   "use strict";
-
   var TC = window.ToolCommon;
   var form = document.getElementById("pdf-form");
   if (!form) return;
-
-  var dropzone = TC.$("[data-dropzone]", form);
-  var fileInput = TC.$('input[type="file"]', form);
-  var fileList = TC.$("[data-file-list]", form);
-  var resetBtn = TC.$("[data-reset]", form);
-
-  var files = []; // { file: File, id: number }
+  var input = form.querySelector('input[type="file"]');
+  var list = form.querySelector("[data-file-list]");
+  var files = [];
   var nextId = 0;
-  var maxFiles = parseInt(form.dataset.maxFiles || "20", 10);
-  var maxBytes = parseInt(form.dataset.maxBytes || "20971520", 10);
+  var maxFiles = Number(form.dataset.maxFiles || 20);
+  var maxBytes = Number(form.dataset.maxBytes || 20971520);
+  TC.initDropZone(form.querySelector("[data-dropzone]"), input);
 
-  TC.initDropZone(dropzone, fileInput);
+  function move(from, to) {
+    if (to < 0 || to >= files.length) return;
+    var item = files.splice(from, 1)[0];
+    files.splice(to, 0, item);
+    render();
+  }
 
-  /* ---- File management ---- */
-
-  function addFiles(newFiles) {
-    TC.hideError();
-    for (var i = 0; i < newFiles.length; i++) {
-      var f = newFiles[i];
-      if (!f.name.toLowerCase().endsWith(".pdf")) {
-        TC.showError("Please choose PDF files with a .pdf extension.");
-        continue;
-      }
-      if (f.size > maxBytes) {
-        TC.showError(f.name + " is larger than the per-file limit.");
-        continue;
-      }
-      if (files.length >= maxFiles) {
-        TC.showError("You can merge up to " + maxFiles + " PDF files at a time.");
-        break;
-      }
-      files.push({ file: f, id: nextId++ });
+  async function loadPreview(item) {
+    if (item.loading || item.preview) return;
+    item.loading = true;
+    item.previewError = "";
+    render();
+    var body = new FormData();
+    body.append("pdf", item.file);
+    body.append("limit", "8");
+    try {
+      var response = await fetch("/api/pdf/preview", { method: "POST", body: body, headers: { "X-CSRFToken": (document.querySelector('meta[name="csrf-token"]') || {}).content || "", "X-Requested-With": "Toolbox" } });
+      var payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Unable to render preview.");
+      item.preview = payload;
+    } catch (error) {
+      item.previewError = error.message;
+    } finally {
+      item.loading = false;
+      render();
     }
-    renderList();
   }
 
-  function removeFile(id) {
-    files = files.filter(function (item) { return item.id !== id; });
-    renderList();
+  function control(label, ariaLabel, handler, disabled) {
+    var element = document.createElement("button");
+    element.type = "button";
+    element.className = "btn btn-ghost";
+    element.textContent = label;
+    element.setAttribute("aria-label", ariaLabel);
+    element.disabled = Boolean(disabled);
+    element.addEventListener("click", handler);
+    return element;
   }
 
-  function moveFile(fromIndex, toIndex) {
-    if (toIndex < 0 || toIndex >= files.length) return;
-    var item = files.splice(fromIndex, 1)[0];
-    files.splice(toIndex, 0, item);
-    renderList();
-  }
-
-  function renderList() {
-    fileList.innerHTML = "";
-    if (files.length === 0) return;
-
+  function render() {
+    list.innerHTML = "";
     files.forEach(function (item, index) {
-      var li = document.createElement("li");
-      li.className = "file-list-item";
-      li.setAttribute("draggable", "true");
-      li.dataset.index = index;
-
-      var nameSpan = document.createElement("span");
-      nameSpan.className = "file-name";
-      nameSpan.textContent = item.file.name;
-
-      var sizeSpan = document.createElement("span");
-      sizeSpan.className = "file-size muted";
-      sizeSpan.textContent = TC.humanSize(item.file.size);
-
-      var controls = document.createElement("span");
+      var row = document.createElement("li");
+      row.className = "file-list-item pdf-merge-file";
+      row.draggable = true;
+      row.dataset.index = index;
+      var head = document.createElement("div");
+      head.className = "pdf-merge-file-head";
+      var grip = document.createElement("span");
+      grip.className = "pdf-file-grip";
+      grip.textContent = String(index + 1);
+      grip.setAttribute("aria-hidden", "true");
+      var info = document.createElement("div");
+      info.className = "pdf-merge-file-info";
+      var name = document.createElement("strong");
+      name.className = "file-name";
+      name.textContent = item.file.name;
+      var meta = document.createElement("span");
+      meta.className = "muted";
+      meta.textContent = TC.humanSize(item.file.size) + (item.preview ? " - " + item.preview.page_count + (item.preview.page_count === 1 ? " page" : " pages") : "");
+      info.append(name, meta);
+      var controls = document.createElement("div");
       controls.className = "file-controls";
+      var expand = control(item.loading ? "Loading..." : item.expanded ? "Hide pages" : "Show pages", (item.expanded ? "Hide" : "Show") + " pages for " + item.file.name, function () {
+        item.expanded = !item.expanded;
+        if (item.expanded && !item.preview) loadPreview(item); else render();
+      }, item.loading);
+      expand.classList.add("btn-secondary");
+      controls.append(expand);
+      controls.append(control("Up", "Move " + item.file.name + " up", function () { move(index, index - 1); }, index === 0));
+      controls.append(control("Down", "Move " + item.file.name + " down", function () { move(index, index + 1); }, index === files.length - 1));
+      controls.append(control("Remove", "Remove " + item.file.name, function () { files = files.filter(function (other) { return other.id !== item.id; }); render(); }));
+      head.append(grip, info, controls);
+      row.appendChild(head);
 
-      if (index > 0) {
-        var upBtn = document.createElement("button");
-        upBtn.type = "button";
-        upBtn.className = "btn btn-ghost";
-        upBtn.textContent = "↑";
-        upBtn.title = "Move up";
-        upBtn.setAttribute("aria-label", "Move " + item.file.name + " up");
-        upBtn.addEventListener("click", function () { moveFile(index, index - 1); });
-        controls.appendChild(upBtn);
+      if (item.previewError) {
+        var error = document.createElement("p");
+        error.className = "alert alert-error";
+        error.textContent = item.previewError;
+        row.appendChild(error);
       }
-
-      if (index < files.length - 1) {
-        var downBtn = document.createElement("button");
-        downBtn.type = "button";
-        downBtn.className = "btn btn-ghost";
-        downBtn.textContent = "↓";
-        downBtn.title = "Move down";
-        downBtn.setAttribute("aria-label", "Move " + item.file.name + " down");
-        downBtn.addEventListener("click", function () { moveFile(index, index + 1); });
-        controls.appendChild(downBtn);
+      if (item.expanded && item.preview) {
+        var preview = document.createElement("div");
+        preview.className = "pdf-merge-preview";
+        item.preview.pages.forEach(function (page) {
+          var figure = document.createElement("figure");
+          var image = document.createElement("img");
+          image.src = page.data_url;
+          image.alt = "Preview of page " + page.number + " in " + item.file.name;
+          image.width = page.width;
+          image.height = page.height;
+          var caption = document.createElement("figcaption");
+          caption.textContent = "Page " + page.number;
+          figure.append(image, caption);
+          preview.appendChild(figure);
+        });
+        if (item.preview.truncated) {
+          var note = document.createElement("p");
+          note.className = "muted";
+          note.textContent = "Showing the first " + item.preview.rendered_count + " of " + item.preview.page_count + " pages.";
+          preview.appendChild(note);
+        }
+        row.appendChild(preview);
       }
-
-      var removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "btn btn-ghost";
-      removeBtn.textContent = "✕";
-      removeBtn.title = "Remove";
-      removeBtn.setAttribute("aria-label", "Remove " + item.file.name);
-      removeBtn.addEventListener("click", function () { removeFile(item.id); });
-      controls.appendChild(removeBtn);
-
-      li.appendChild(nameSpan);
-      li.appendChild(sizeSpan);
-      li.appendChild(controls);
-      fileList.appendChild(li);
-
-      /* Drag-to-reorder */
-      li.addEventListener("dragstart", function (e) {
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", index.toString());
-        li.classList.add("dragging");
-      });
-      li.addEventListener("dragend", function () {
-        li.classList.remove("dragging");
-      });
-    });
-
-  }
-
-  fileList.addEventListener("dragover", function (e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  });
-
-  fileList.addEventListener("drop", function (e) {
-    e.preventDefault();
-    var fromStr = e.dataTransfer.getData("text/plain");
-    if (fromStr === "") return;
-    var target = e.target.closest(".file-list-item");
-    if (!target) return;
-    moveFile(parseInt(fromStr, 10), parseInt(target.dataset.index, 10));
-  });
-
-  /* File input change */
-  if (fileInput) {
-    fileInput.addEventListener("change", function () {
-      if (fileInput.files) {
-        addFiles(fileInput.files);
-        fileInput.value = "";
-      }
+      row.addEventListener("dragstart", function (event) { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", String(index)); row.classList.add("dragging"); });
+      row.addEventListener("dragend", function () { row.classList.remove("dragging"); });
+      list.appendChild(row);
     });
   }
 
-  /* Form submission */
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    if (files.length < 2) {
-      TC.showError("Please add at least two PDF files.");
-      return;
-    }
-
-    var formData = new FormData();
-    files.forEach(function (item) {
-      formData.append("files", item.file);
+  input.addEventListener("change", function () {
+    TC.hideError();
+    Array.prototype.forEach.call(input.files || [], function (file) {
+      if (!file.name.toLowerCase().endsWith(".pdf")) return TC.showError("Choose files with a .pdf extension.");
+      if (file.size > maxBytes) return TC.showError(file.name + " exceeds the per-file limit.");
+      if (files.length >= maxFiles) return TC.showError("You can merge up to " + maxFiles + " files.");
+      files.push({ id: nextId++, file: file, expanded: false, preview: null, loading: false });
     });
-
-    var blob = await TC.submitForm(form, "/tools/pdf-merger/merge", { body: formData });
-    if (blob) {
-      TC.setDownload(blob, "merged-pdf.pdf");
-    }
+    input.value = "";
+    render();
   });
-
-  /* Reset */
-  if (resetBtn) {
-    resetBtn.addEventListener("click", function () {
-      files = [];
-      nextId = 0;
-      renderList();
-      form.reset();
-      TC.resetTool();
-    });
-  }
+  list.addEventListener("dragover", function (event) { event.preventDefault(); });
+  list.addEventListener("drop", function (event) {
+    event.preventDefault();
+    var target = event.target.closest(".pdf-merge-file");
+    if (target) move(Number(event.dataTransfer.getData("text/plain")), Number(target.dataset.index));
+  });
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    if (files.length < 2) return TC.showError("Add at least two PDF files.");
+    var body = new FormData();
+    files.forEach(function (item) { body.append("files", item.file); });
+    var blob = await TC.submitForm(form, "/tools/pdf-merger/merge", { body: body });
+    if (blob) TC.setDownload(blob, "merged-pdf.pdf");
+  });
+  function resetAll() { files = []; nextId = 0; form.reset(); render(); TC.resetTool(); }
+  form.querySelector("[data-reset]").addEventListener("click", resetAll);
+  var again = document.querySelector("[data-start-again]");
+  if (again) again.addEventListener("click", resetAll);
 })();

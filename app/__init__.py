@@ -99,6 +99,8 @@ def _register_context(app):
                 "pdf_files": app.config["MAX_PDF_FILES"],
                 "pdf_file_bytes": app.config["MAX_PDF_FILE_BYTES"],
                 "pdf_pages": app.config["MAX_PDF_PAGES"],
+                "pdf_preview_pages": app.config["PDF_PREVIEW_MAX_PAGES"],
+                "document_file_bytes": app.config["MAX_DOCUMENT_FILE_BYTES"],
                 "image_bytes": app.config["MAX_IMAGE_BYTES"],
                 "image_files": app.config["MAX_IMAGE_FILES"],
                 "gif_frames": app.config["MAX_GIF_FRAMES"],

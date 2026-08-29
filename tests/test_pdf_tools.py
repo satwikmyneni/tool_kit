@@ -77,6 +77,22 @@ def test_pdf_compress_rotate_delete_extract_and_reorder(client):
     assert [int(page.mediabox.width) for page in PdfReader(io.BytesIO(reordered.data)).pages] == [90, 72, 90]
 
 
+def test_visual_rotation_map_applies_individual_page_angles(client):
+    response = pdf_response(
+        client,
+        "rotate-pdf",
+        {"pages": "all", "degrees": "90", "rotations": '{"1": 90, "3": 270}'},
+    )
+    assert response.status_code == 200
+    rotations = [page.rotation for page in PdfReader(io.BytesIO(response.data)).pages]
+    assert rotations == [90, 0, 270]
+
+
+def test_visual_rotation_map_rejects_invalid_input(client):
+    response = pdf_response(client, "rotate-pdf", {"rotations": '{"999": 45}'})
+    assert response.status_code == 400
+
+
 def test_delete_rejects_removing_every_page(client):
     response = pdf_response(client, "delete-pdf-pages", {"pages": "all"})
     assert response.status_code == 400

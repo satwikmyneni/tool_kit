@@ -1,0 +1,52 @@
+{% extends "tool_page.html" %}
+{% set container_class = "tool-wide" %}
+{% set pdf_input = tool.slug.startswith("pdf-to-") %}
+{% set image_input = tool.slug in ["jpg-to-pdf", "png-to-pdf"] %}
+{% set office_input = tool.slug in ["word-to-pdf", "excel-to-pdf", "powerpoint-to-pdf"] %}
+
+{% block tool_main %}
+<div class="tool-panel">
+  <form id="document-conversion-form" data-tool-form data-tool-slug="{{ tool.slug }}" data-process-url="{{ tool.route }}/process" data-max-files="{{ limits.image_files }}">
+    <div class="upload-area" data-dropzone>
+      <svg class="upload-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      {% if pdf_input %}
+      <label class="field-label" for="conversion-file">Choose a PDF</label>
+      <p>Drag one validated PDF here, up to {{ (limits.pdf_file_bytes / 1048576)|round|int }} MB.</p>
+      <input class="field-input file-input" id="conversion-file" name="pdf" type="file" accept="application/pdf,.pdf" required>
+      {% elif image_input %}
+      <label class="field-label" for="conversion-file">Choose {{ "JPG" if tool.slug == "jpg-to-pdf" else "PNG" }} images</label>
+      <p>Add images in any order, then arrange them before creating the PDF.</p>
+      <input class="field-input file-input" id="conversion-file" name="images" type="file" accept="{{ 'image/jpeg,.jpg,.jpeg' if tool.slug == 'jpg-to-pdf' else 'image/png,.png' }}" multiple>
+      {% else %}
+      <label class="field-label" for="conversion-file">Choose a {{ "Word" if tool.slug == "word-to-pdf" else "Excel" if tool.slug == "excel-to-pdf" else "PowerPoint" }} file</label>
+      <p>The document is validated, converted in an isolated temporary folder, and deleted after the response.</p>
+      <input class="field-input file-input" id="conversion-file" name="document" type="file" accept="{{ '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document' if tool.slug == 'word-to-pdf' else '.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' if tool.slug == 'excel-to-pdf' else '.ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation' }}" required>
+      {% endif %}
+    </div>
+
+    {% if tool.slug in ["pdf-to-jpg", "pdf-to-png"] %}
+      {% set page_manager_mode = "extract-pdf-pages" %}{% include "pdf/_page_manager.html" %}
+      <details class="advanced-options"><summary>Advanced page and quality settings</summary><div class="field-grid"><div class="field"><label class="field-label" for="pages">Pages</label><input class="field-input" id="pages" name="pages" value="all" placeholder="all or 1,3-5"></div><div class="field"><label class="field-label" for="dpi">Resolution</label><select class="field-select" id="dpi" name="dpi"><option value="72">72 DPI</option><option value="96">96 DPI</option><option value="120" selected>120 DPI</option><option value="150">150 DPI</option></select></div>{% if tool.slug == "pdf-to-jpg" %}<div class="field"><label class="field-label" for="quality">JPG quality</label><input class="field-input" id="quality" name="quality" type="number" min="40" max="95" value="88"></div>{% endif %}</div></details>
+    {% elif image_input %}
+      <ul class="file-list" data-file-list aria-live="polite"></ul>
+      <div class="field-grid options-panel"><div class="field"><label class="field-label" for="page-size">Page size</label><select class="field-select" id="page-size" name="page_size"><option value="a4">A4</option><option value="letter">Letter</option><option value="auto">Match image</option></select></div><div class="field"><label class="field-label" for="orientation">Orientation</label><select class="field-select" id="orientation" name="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div><div class="field"><label class="field-label" for="margin">Margin</label><input class="field-input" id="margin" name="margin" type="number" min="0" max="144" value="18"></div><div class="field"><label class="field-label" for="fit">Image fit</label><select class="field-select" id="fit" name="fit"><option value="contain">Fit entire image</option><option value="cover">Fill and crop</option></select></div></div>
+    {% endif %}
+
+    {% if tool.slug == "pdf-to-word" %}<div class="alert conversion-note"><strong>Best for text-based PDFs.</strong> Paragraphs and supported embedded images are extracted; complex columns, forms, and exact typography may change.</div>{% endif %}
+    {% if tool.slug == "pdf-to-excel" %}<div class="alert conversion-note"><strong>Designed for table PDFs.</strong> Each detected table becomes a worksheet. Scans require OCR first, and files without structured tables return a clear error.</div>{% endif %}
+    {% if tool.slug == "pdf-to-powerpoint" %}<div class="alert conversion-note"><strong>Faithful page-to-slide export.</strong> Each page is placed as an image on a slide, so original text and objects are not editable.</div>{% endif %}
+    {% if office_input and not office_engine_available %}<div class="alert alert-error"><strong>Server setup required.</strong> LibreOffice is not detected. An administrator must install it or configure <code>LIBREOFFICE_PATH</code> before this conversion can run.</div>{% endif %}
+
+    <div class="tool-actions sticky-tool-actions"><button class="btn btn-primary" type="submit" data-submit>Convert file</button><button class="btn btn-ghost" type="button" data-reset>Reset</button></div>
+  </form>
+  <p class="loading" data-loading hidden role="status"><span class="spinner" aria-hidden="true"></span><span>Converting securely...</span></p>
+  <div class="alert alert-error" data-error hidden role="alert"></div>
+  <div class="result-panel success-panel" data-result hidden aria-live="polite"><p class="result-kicker">Complete</p><h2>Your converted file is ready</h2><p data-details></p><div class="tool-actions"><a class="btn btn-primary" data-download>Download converted file</a><button class="btn btn-ghost" type="button" data-start-again>Start again</button></div></div>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<div class="content-grid"><div><h2>What this conversion does</h2><p>{{ tool.description }} Output quality depends on the source document's structure, fonts, and embedded content.</p></div><div><h2>Private temporary processing</h2><p>Uploads use bounded request limits and randomized temporary names. Toolbox does not retain the input or generated download after the request.</p></div></div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script>{% if tool.slug in ["pdf-to-jpg", "pdf-to-png"] %}<script src="{{ url_for('static', filename='js/pdf-preview.js') }}"></script>{% endif %}<script src="{{ url_for('static', filename='js/document-conversion.js') }}"></script>{% endblock %}

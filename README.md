@@ -1,6 +1,6 @@
 # Toolbox
 
-Toolbox is a production-oriented Flask utility platform built around one idea: **simple tools for everyday tasks**. It provides 85 focused, account-free pages covering 113 roadmap capabilities. Private text, calculations, generated secrets, notes, and finance data stay in the browser; bounded file operations use temporary request processing on the Flask server.
+Toolbox is a production-oriented Flask utility platform built around one idea: **simple tools for everyday tasks**. It provides 95 focused, account-free tool pages. Private text, calculations, generated secrets, notes, and finance data stay in the browser; bounded file operations use temporary request processing on the Flask server.
 
 ## Features
 
@@ -10,10 +10,15 @@ All cards in the central registry have `status = available` and link to working 
 
 - PDF merge; selected/range/every-page split with ZIP output; honest lossless stream/object compression
 - image-to-PDF for ordered PNG, JPEG, and WEBP inputs with A4, Letter, auto size, orientation, margins, contain, and cover options
-- rotate, delete, extract, and reorder pages using one-based ranges
+- reusable, real-page thumbnail previews for merge, split, rotate, delete, extract, reorder, and PDF image export, with bounded DPI, dimensions, and page counts
+- visual select/clear controls, per-page delete and rotation actions, drag-to-reorder pages/files, plus advanced one-based ranges
 - metadata inspection and editing
 - AES-256 password protection and legitimate unlock with the correct password
 - PDF structure, page count, encryption, metadata, and file-size validation/inspection
+- PDF-to-JPG and PDF-to-PNG for selected pages, returning a single image or ordered ZIP
+- PDF-to-DOCX text/supported-image extraction, structured PDF table-to-XLSX export, and faithful page-image-to-PPTX export
+- JPG-to-PDF and PNG-to-PDF focused entry points backed by the same validated image-to-PDF service
+- DOC/DOCX, XLS/XLSX, and PPT/PPTX to PDF through a detected LibreOffice installation, with isolated profiles, timeouts, randomized temporary paths, and a clear unavailable response
 
 ### Images and media
 
@@ -74,7 +79,7 @@ Formulas and assumptions are shown with results. Financial output is general inf
 app.py                         localhost development entry point
 config.py                      environment-backed limits and deployment settings
 app/__init__.py                Flask factory, extensions, errors, headers, logging
-app/registry.py                canonical metadata for all 85 public tool pages
+app/registry.py                canonical metadata for all 95 public tool pages
 app/routes/                    thin page and processing endpoints
 app/services/                  bounded PDF, image, code, GIF, TTS, and file logic
 app/templates/                 Jinja pages and shared accessible components
@@ -123,14 +128,15 @@ Open <http://127.0.0.1:5000>. Replace the example `SECRET_KEY`; never commit `.e
 
 - Flask, Jinja, Flask-WTF, and Flask-Limiter for the web layer, CSRF, and rate limiting
 - Pillow for validated raster transforms, image-to-PDF, and GIF output
-- pypdf for structural PDF processing
+- pypdf for structural PDF processing and PyMuPDF for bounded page rendering and content extraction
+- python-docx, openpyxl, and python-pptx for practical DOCX, XLSX, and PPTX output
 - cryptography for strong AES-256 PDF encryption support in pypdf
 - qrcode and python-barcode for code images
 - rembg with the CPU inference extra for background removal
 - gTTS for external speech synthesis
 - pytest for automated verification
 
-No database, frontend framework, task queue, or FFmpeg installation is required.
+No database, frontend framework, task queue, or FFmpeg installation is required. LibreOffice is optional and only required for Word/Excel/PowerPoint-to-PDF tools.
 
 ## Configuration
 
@@ -146,6 +152,10 @@ No database, frontend framework, task queue, or FFmpeg installation is required.
 | `ANALYTICS_PROVIDER` | Optional event integration label; empty is a no-op |
 | `MAX_CONTENT_LENGTH` | Maximum total HTTP request size |
 | `MAX_PDF_FILES`, `MAX_PDF_FILE_BYTES`, `MAX_PDF_PAGES` | PDF batch, byte, and page limits |
+| `PDF_PREVIEW_DPI`, `PDF_PREVIEW_MAX_WIDTH`, `PDF_PREVIEW_MAX_HEIGHT`, `PDF_PREVIEW_MAX_PAGES` | Bounded thumbnail rendering limits |
+| `MAX_CONVERSION_PAGES`, `MAX_CONVERSION_TOTAL_PIXELS` | PDF export page and aggregate raster limits |
+| `MAX_DOCUMENT_FILE_BYTES`, `DOCUMENT_CONVERSION_TIMEOUT_SECONDS` | Office upload and conversion runtime limits |
+| `LIBREOFFICE_PATH` | Optional explicit path to `soffice`/LibreOffice; otherwise auto-detected |
 | `MAX_IMAGE_FILES`, `MAX_IMAGE_BYTES`, `MAX_IMAGE_PIXELS`, `MAX_IMAGE_EDGE` | Image batch, byte, decode, and dimension limits |
 | `MAX_GIF_FRAMES`, `MAX_GIF_TOTAL_PIXELS` | GIF batch and aggregate-memory limits |
 | `MAX_QR_CHARS`, `MAX_BARCODE_CHARS`, `MAX_TTS_CHARS` | Text limits |
@@ -159,7 +169,9 @@ Invalid integer environment values fall back to bounded defaults. Production sta
 ## Security and privacy
 
 - CSRF protects state-changing routes; expensive endpoints have rate limits.
-- File extension, MIME metadata, magic bytes, actual parser/decoder output, bytes, pixels, edges, pages, file counts, and aggregate GIF pixels are bounded.
+- File extension, MIME metadata, magic bytes, actual parser/decoder output, bytes, pixels, edges, pages, file counts, preview dimensions, and aggregate raster/GIF pixels are bounded.
+- OOXML containers are checked for their expected internal structure and expansion size; legacy Office files require the OLE signature.
+- LibreOffice runs with an argument list (never a shell), a randomized input filename, an isolated temporary user profile, and a hard timeout. Its workspace is removed after success or failure.
 - Pillow decompression-bomb checks and PDF parser errors produce user-safe responses.
 - No request uses an uploaded filename as a filesystem path. Generated responses use `Cache-Control: no-store`.
 - Security headers include CSP, clickjacking, MIME-sniffing, referrer, permissions, and secure production cookie controls.
@@ -180,7 +192,7 @@ gTTS sends submitted text to Google's external service. Production must allow ou
 .venv\Scripts\python.exe -m pytest -q
 ```
 
-Tests generate and parse real PDFs, ZIPs, QR codes, barcodes, PNG/JPEG/WEBP images, transparency, GIFs, encryption, metadata, and page transformations. Node tests exercise browser-independent text, encoding, calculator, secure-generator, productivity, finance, typing, and expense logic. TTS and background-removal providers are deterministic in CI so tests do not require a network or model download.
+Tests generate and parse real PDFs, preview PNGs, ZIPs, DOCX, XLSX, PPTX, QR codes, barcodes, PNG/JPEG/WEBP images, transparency, GIFs, encryption, metadata, and page transformations. Conversion tests cover table detection, formula-safety boundaries, content validation, rate limiting, no-shell command construction, and temporary cleanup. LibreOffice itself is not required in CI: its process boundary is tested deterministically, while deployment can add an environment-specific integration test.
 
 ## Deployment
 
@@ -192,12 +204,16 @@ SECRET_KEY=a-long-random-production-secret
 BASE_URL=https://tools.example.com
 ```
 
-Run `app:create_app()` behind a production WSGI server and HTTPS reverse proxy; Flask's development server is not a production server. Give the process write access to `instance/` for rotating logs and private temporary workspaces. Use a supported shared Flask-Limiter backend for multiple workers, plan request/memory limits for Pillow and rembg, pre-provision the model when outbound downloads are unavailable, and allow gTTS outbound HTTPS if that tool is enabled.
+Run `app:create_app()` behind a production WSGI server and HTTPS reverse proxy; Flask's development server is not a production server. Give the process write access to `instance/` for rotating logs and private temporary workspaces. Use a supported shared Flask-Limiter backend for multiple workers, plan request/memory limits for Pillow, PyMuPDF, and rembg, pre-provision the model when outbound downloads are unavailable, and allow gTTS outbound HTTPS if that tool is enabled.
+
+For Office-to-PDF, install LibreOffice on the application host and ensure `soffice` is on `PATH`, or set `LIBREOFFICE_PATH` to the executable. The web-service account needs execute permission. Keep the configured timeout, request limits, and writable `instance/tmp/` storage in place.
 
 ## Known limitations and intentional exclusions
 
-- PDF-to-JPG/PNG requires a real PDF renderer such as PDFium, MuPDF, or Poppler; none is silently assumed or bundled.
-- PDF page-number overlays and text watermarks require a dependable PDF drawing layer. They are excluded rather than approximated with invalid content streams.
+- PDF-to-DOCX preserves practical reading order and supported images, not every font, form field, column, or exact desktop-publishing layout.
+- PDF-to-XLSX only exports tables detected from PDF geometry. Image-only scans need OCR first, and documents without structured tables return an error instead of a fabricated spreadsheet.
+- PDF-to-PPTX creates one faithful page image per slide; source text and graphics are not editable PowerPoint objects.
+- Office-to-PDF is unavailable until LibreOffice is installed or configured on the server. Output fidelity depends on LibreOffice and the fonts available on that host.
 - Audio trimming is excluded because the project deliberately does not require FFmpeg or claim browser codec support it cannot guarantee.
 - Lossless pypdf compression does not degrade embedded images and may produce little or no reduction for already optimized PDFs; the UI reports actual sizes.
 - The code formatter is a lightweight structural formatter, not a standards-complete parser, linter, or minifier.

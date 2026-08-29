@@ -1,6 +1,7 @@
 """Bounded in-memory PDF processing built on pypdf and Pillow."""
 
 import io
+import json
 import re
 import zipfile
 
@@ -204,8 +205,32 @@ def images_to_pdf(file_storages, page_size="a4", orientation="portrait", margin=
     return output.getvalue()
 
 
-def rotate_pdf(upload, pages, degrees):
+def rotate_pdf(upload, pages, degrees, rotations=None):
     reader, _data = _reader(upload)
+    if rotations:
+        try:
+            values = json.loads(rotations)
+            if not isinstance(values, dict) or len(values) > len(reader.pages):
+                raise ValueError
+            rotation_map = {}
+            for page_number, amount in values.items():
+                index = int(page_number) - 1
+                angle = int(amount) % 360
+                if index < 0 or index >= len(reader.pages) or angle not in {0, 90, 180, 270}:
+                    raise ValueError
+                if angle:
+                    rotation_map[index] = angle
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise ToolError("The per-page rotation selection is invalid.") from exc
+        if not rotation_map:
+            raise ToolError("Rotate at least one page before processing.")
+        writer = PdfWriter()
+        _copy_metadata(reader, writer)
+        for index, page in enumerate(reader.pages):
+            writer.add_page(page)
+            if index in rotation_map:
+                writer.pages[-1].rotate(rotation_map[index])
+        return _write(writer)
     try:
         degrees = int(degrees)
     except (TypeError, ValueError) as exc:

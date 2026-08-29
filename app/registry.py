@@ -54,6 +54,16 @@ pdf-metadata|PDF Metadata Editor|PDF & Documents|View document information and d
 protect-pdf|Protect PDF|PDF & Documents|Encrypt a PDF with a password required for opening it.|pdf|pdf,password,encrypt,protect|server|||unlock-pdf,pdf-inspector
 unlock-pdf|Unlock PDF|PDF & Documents|Remove encryption from a PDF when you provide its correct password.|pdf|pdf,password,decrypt,unlock|server|||protect-pdf,pdf-inspector
 pdf-inspector|PDF Inspector & Validator|PDF & Documents|Validate a PDF and inspect pages, encryption, metadata, and file size.|pdf|pdf,inspect,validate,information,repair|server|||pdf-metadata,pdf-compressor
+pdf-to-jpg|PDF to JPG|PDF & Documents|Render selected PDF pages as high-quality JPG images.|pdf|pdf,jpg,jpeg,image,convert,export|server||yes|pdf-to-png,pdf-to-powerpoint,image-compressor
+pdf-to-png|PDF to PNG|PDF & Documents|Render selected PDF pages as lossless PNG images.|pdf|pdf,png,image,convert,export|server|||pdf-to-jpg,pdf-to-powerpoint,image-compressor
+pdf-to-word|PDF to Word|PDF & Documents|Extract PDF text and supported images into a practical DOCX document.|pdf|pdf,word,docx,convert,text,document|server||yes|word-to-pdf,pdf-to-excel,pdf-to-powerpoint
+pdf-to-excel|PDF to Excel|PDF & Documents|Detect structured PDF tables and export them into an XLSX workbook.|pdf|pdf,excel,xlsx,table,convert,spreadsheet|server|||excel-to-pdf,pdf-to-word,pdf-to-powerpoint
+pdf-to-powerpoint|PDF to PowerPoint|PDF & Documents|Place each PDF page faithfully onto a PowerPoint slide.|pdf|pdf,powerpoint,pptx,slides,convert,presentation|server|||powerpoint-to-pdf,pdf-to-word,pdf-to-png
+word-to-pdf|Word to PDF|PDF & Documents|Convert DOC or DOCX documents to PDF with the server's LibreOffice engine.|pdf|word,doc,docx,pdf,convert,libreoffice|server|||pdf-to-word,excel-to-pdf,powerpoint-to-pdf
+excel-to-pdf|Excel to PDF|PDF & Documents|Convert XLS or XLSX spreadsheets to PDF with the server's LibreOffice engine.|pdf|excel,xls,xlsx,pdf,convert,libreoffice|server|||pdf-to-excel,word-to-pdf,powerpoint-to-pdf
+powerpoint-to-pdf|PowerPoint to PDF|PDF & Documents|Convert PPT or PPTX presentations to PDF with the server's LibreOffice engine.|pdf|powerpoint,ppt,pptx,pdf,convert,libreoffice|server|||pdf-to-powerpoint,word-to-pdf,excel-to-pdf
+jpg-to-pdf|JPG to PDF|PDF & Documents|Combine ordered JPG images into a configurable PDF document.|pdf|jpg,jpeg,image,pdf,convert,combine|server|||png-to-pdf,images-to-pdf,pdf-to-jpg
+png-to-pdf|PNG to PDF|PDF & Documents|Combine ordered PNG images into a configurable PDF document.|pdf|png,image,pdf,convert,combine|server|||jpg-to-pdf,images-to-pdf,pdf-to-png
 background-remover|Image Background Remover|Images|Remove an image background and export a transparent PNG.|image|image,background,remove,transparent,png|server||yes|image-resizer,image-compressor,image-converter
 image-compressor|Image Compressor|Images|Compress a PNG, JPEG, or WEBP with explicit quality controls.|image|image,compress,quality,size,webp|server||yes|image-resizer,image-converter,background-remover
 image-resizer|Image Resizer|Images|Resize an image with aspect-ratio and no-upscale controls.|image|image,resize,dimensions,width,height|server||yes|image-compressor,image-converter,images-to-pdf
@@ -143,6 +153,41 @@ for slug, name, description, keywords, popular in _parse_rows(_CALCULATOR_DATA):
     TOOLS.append(_tool(slug, name, "Calculators", description, "wallet", keywords,
                        group="calculator", popular=popular,
                        related="unit-converter,percentage-calculator,loan-calculator"))
+
+
+PDF_PUBLIC_ROUTES = {
+    slug: f"/{slug}"
+    for slug in {
+        "pdf-to-jpg", "pdf-to-png", "pdf-to-word", "pdf-to-excel", "pdf-to-powerpoint",
+        "word-to-pdf", "excel-to-pdf", "powerpoint-to-pdf", "jpg-to-pdf", "png-to-pdf",
+    }
+}
+PDF_SUBCATEGORIES = {
+    "Create & Combine": {"pdf-merger", "images-to-pdf", "jpg-to-pdf", "png-to-pdf"},
+    "Conversion & Export": {
+        "pdf-to-jpg", "pdf-to-png", "pdf-to-word", "pdf-to-excel", "pdf-to-powerpoint",
+        "word-to-pdf", "excel-to-pdf", "powerpoint-to-pdf",
+    },
+    "Organize Pages": {"pdf-splitter", "rotate-pdf", "delete-pdf-pages", "extract-pdf-pages", "reorder-pdf-pages"},
+    "Security & Metadata": {"protect-pdf", "unlock-pdf", "pdf-metadata"},
+    "Optimization & Repair": {"pdf-compressor", "pdf-inspector"},
+}
+for tool in TOOLS:
+    if tool["slug"] in PDF_PUBLIC_ROUTES:
+        tool["route"] = PDF_PUBLIC_ROUTES[tool["slug"]]
+    tool["subcategory"] = next(
+        (name for name, slugs in PDF_SUBCATEGORIES.items() if tool["slug"] in slugs),
+        None,
+    )
+
+for slug, title, description in (
+    ("pdf-to-word", "PDF to Word Converter — Free DOCX Export | Toolbox", "Convert a PDF to DOCX with structured text and supported image extraction. Files are processed temporarily and not retained."),
+    ("pdf-to-excel", "PDF to Excel Converter — Extract Tables to XLSX | Toolbox", "Detect structured tables in a PDF and export them to a clean XLSX workbook with separate worksheets."),
+    ("pdf-to-powerpoint", "PDF to PowerPoint Converter — PDF Pages to PPTX | Toolbox", "Convert PDF pages into a faithful PowerPoint presentation with one page image per slide."),
+):
+    tool = next(item for item in TOOLS if item["slug"] == slug)
+    tool["seo_title"] = title
+    tool["seo_description"] = description
 
 
 def get_tools(status=None):

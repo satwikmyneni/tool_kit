@@ -40,7 +40,7 @@ def tool_page_context(slug, extra=None):
         "related_tools": get_related_tools(slug),
         "page_title": tool["seo_title"],
         "meta_description": tool["seo_description"],
-        "canonical_path": f"/tools/{tool['slug']}",
+        "canonical_path": tool["route"],
         "category_info": {
             "name": tool["category"],
             "slug": CATEGORY_INFO[tool["category"]][0],

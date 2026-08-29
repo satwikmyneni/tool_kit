@@ -2,6 +2,7 @@ import io
 import os
 import secrets
 import shutil
+import zipfile
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -23,6 +24,15 @@ PDF_EXTENSIONS = {".pdf"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 PDF_MIMETYPES = {"application/pdf", "application/x-pdf"}
 IMAGE_MIMETYPES = {"image/png", "image/jpeg", "image/webp"}
+OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+DOCUMENT_TYPES = {
+    ".docx": ({"application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/zip"}, "word/"),
+    ".xlsx": ({"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/zip"}, "xl/"),
+    ".pptx": ({"application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/zip"}, "ppt/"),
+    ".doc": ({"application/msword", "application/x-ole-storage"}, None),
+    ".xls": ({"application/vnd.ms-excel", "application/x-ole-storage"}, None),
+    ".ppt": ({"application/vnd.ms-powerpoint", "application/x-ole-storage"}, None),
+}
 
 
 def temp_root():
@@ -95,6 +105,39 @@ def read_image_upload(file_storage, max_bytes):
         "Please upload a PNG, JPEG, or WEBP image.",
     )
     return read_upload(file_storage, max_bytes)
+
+
+def read_document_upload(file_storage, max_bytes, allowed_extensions):
+    """Validate Office content without trusting the filename alone."""
+    if file_storage is None or not getattr(file_storage, "filename", None):
+        raise ToolError("Please choose a document file.")
+    suffix = Path(file_storage.filename).suffix.lower()
+    allowed = set(allowed_extensions)
+    if suffix not in allowed or suffix not in DOCUMENT_TYPES:
+        expected = ", ".join(sorted(allowed))
+        raise ToolError(f"Please upload one of these document types: {expected}.")
+    mimetypes, marker = DOCUMENT_TYPES[suffix]
+    mimetype = (getattr(file_storage, "mimetype", "") or "").lower()
+    if mimetype and mimetype != "application/octet-stream" and mimetype not in mimetypes:
+        raise ToolError("The uploaded file type does not match its extension.")
+    data = read_upload(file_storage, max_bytes)
+    if marker:
+        try:
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                members = archive.infolist()
+                names = {item.filename.replace("\\", "/") for item in members}
+                expanded = sum(item.file_size for item in members)
+                if len(members) > 5000 or expanded > max_bytes * 20:
+                    raise ToolError("That Office document expands beyond the safe processing limit.")
+                if "[Content_Types].xml" not in names or not any(name.startswith(marker) for name in names):
+                    raise ToolError("That file is not a valid Office document of the selected type.")
+        except ToolError:
+            raise
+        except (zipfile.BadZipFile, OSError, ValueError) as exc:
+            raise ToolError("That Office document could not be validated.") from exc
+    elif not data.startswith(OLE_MAGIC):
+        raise ToolError("That legacy Office document could not be validated.")
+    return data, suffix
 
 
 def looks_like_pdf(data):

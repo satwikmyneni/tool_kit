@@ -15,10 +15,34 @@ from app.services.pdf_service import (
     unlock_pdf,
     update_pdf_metadata,
 )
+from app.services.document_service import (
+    libreoffice_available,
+    office_to_pdf,
+    pdf_to_docx,
+    pdf_to_pptx,
+    pdf_to_xlsx,
+)
+from app.services.pdf_preview_service import pdf_to_images, render_pdf_preview
 from app.utils.errors import ToolError
 from app.utils.helpers import handle_tool_error, send_generated_file, tool_page_context
 
 bp = Blueprint("pdf", __name__)
+
+
+@bp.post("/api/pdf/preview")
+@limiter.limit(lambda: current_app.config["RATELIMIT_PDF_PREVIEW"])
+def preview():
+    try:
+        details = render_pdf_preview(request.files.get("pdf"), request.form.get("limit"))
+    except ToolError as error:
+        return handle_tool_error(error)
+    except Exception as error:
+        current_app.logger.exception("PDF preview failed: %s", error)
+        return handle_tool_error(ToolError("Something went wrong while rendering the PDF preview."))
+    response = jsonify(details)
+    response.headers["Cache-Control"] = "no-store, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @bp.route("/tools/pdf-merger")
@@ -105,7 +129,12 @@ def process_utility(slug):
             )
             filename, mimetype = "images-to-pdf.pdf", "application/pdf"
         elif slug == "rotate-pdf":
-            data, filename, mimetype = rotate_pdf(upload, request.form.get("pages"), request.form.get("degrees")), "rotated-pdf.pdf", "application/pdf"
+            data, filename, mimetype = rotate_pdf(
+                upload,
+                request.form.get("pages"),
+                request.form.get("degrees"),
+                request.form.get("rotations"),
+            ), "rotated-pdf.pdf", "application/pdf"
         elif slug == "delete-pdf-pages":
             data, filename, mimetype = delete_pdf_pages(upload, request.form.get("pages")), "pages-deleted.pdf", "application/pdf"
         elif slug == "extract-pdf-pages":
@@ -143,3 +172,79 @@ def inspect(slug):
     response = jsonify(details)
     response.headers["Cache-Control"] = "no-store, max-age=0"
     return response
+
+
+CONVERSION_SLUGS = {
+    "pdf-to-jpg", "pdf-to-png", "pdf-to-word", "pdf-to-excel", "pdf-to-powerpoint",
+    "word-to-pdf", "excel-to-pdf", "powerpoint-to-pdf", "jpg-to-pdf", "png-to-pdf",
+}
+
+
+@bp.get("/pdf-to-jpg", defaults={"slug": "pdf-to-jpg"})
+@bp.get("/pdf-to-png", defaults={"slug": "pdf-to-png"})
+@bp.get("/pdf-to-word", defaults={"slug": "pdf-to-word"})
+@bp.get("/pdf-to-excel", defaults={"slug": "pdf-to-excel"})
+@bp.get("/pdf-to-powerpoint", defaults={"slug": "pdf-to-powerpoint"})
+@bp.get("/word-to-pdf", defaults={"slug": "word-to-pdf"})
+@bp.get("/excel-to-pdf", defaults={"slug": "excel-to-pdf"})
+@bp.get("/powerpoint-to-pdf", defaults={"slug": "powerpoint-to-pdf"})
+@bp.get("/jpg-to-pdf", defaults={"slug": "jpg-to-pdf"})
+@bp.get("/png-to-pdf", defaults={"slug": "png-to-pdf"})
+def conversion_page(slug):
+    return render_template(
+        "pdf/conversion.html",
+        office_engine_available=libreoffice_available(),
+        **tool_page_context(slug, {"container_class": "tool-wide"}),
+    )
+
+
+@bp.post("/pdf-to-jpg/process", defaults={"slug": "pdf-to-jpg"})
+@bp.post("/pdf-to-png/process", defaults={"slug": "pdf-to-png"})
+@bp.post("/pdf-to-word/process", defaults={"slug": "pdf-to-word"})
+@bp.post("/pdf-to-excel/process", defaults={"slug": "pdf-to-excel"})
+@bp.post("/pdf-to-powerpoint/process", defaults={"slug": "pdf-to-powerpoint"})
+@bp.post("/word-to-pdf/process", defaults={"slug": "word-to-pdf"})
+@bp.post("/excel-to-pdf/process", defaults={"slug": "excel-to-pdf"})
+@bp.post("/powerpoint-to-pdf/process", defaults={"slug": "powerpoint-to-pdf"})
+@bp.post("/jpg-to-pdf/process", defaults={"slug": "jpg-to-pdf"})
+@bp.post("/png-to-pdf/process", defaults={"slug": "png-to-pdf"})
+@limiter.limit(lambda: current_app.config["RATELIMIT_PDF"])
+def process_conversion(slug):
+    try:
+        if slug in {"pdf-to-jpg", "pdf-to-png"}:
+            data, filename, mimetype = pdf_to_images(
+                request.files.get("pdf"),
+                "jpg" if slug == "pdf-to-jpg" else "png",
+                request.form.get("pages", "all"),
+                request.form.get("dpi", "120"),
+                request.form.get("quality", "88"),
+            )
+        elif slug == "pdf-to-word":
+            data, filename, mimetype = pdf_to_docx(request.files.get("pdf")), "converted-document.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        elif slug == "pdf-to-excel":
+            data, filename, mimetype = pdf_to_xlsx(request.files.get("pdf")), "extracted-tables.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        elif slug == "pdf-to-powerpoint":
+            data, filename, mimetype = pdf_to_pptx(request.files.get("pdf")), "pdf-pages.pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        elif slug in {"word-to-pdf", "excel-to-pdf", "powerpoint-to-pdf"}:
+            data, filename, mimetype = office_to_pdf(request.files.get("document"), slug), "converted-document.pdf", "application/pdf"
+        elif slug in {"jpg-to-pdf", "png-to-pdf"}:
+            images = request.files.getlist("images")
+            expected = {".jpg", ".jpeg"} if slug == "jpg-to-pdf" else {".png"}
+            if any(not upload.filename.lower().endswith(tuple(expected)) for upload in images if upload.filename):
+                raise ToolError(f"Choose only {'JPG' if slug == 'jpg-to-pdf' else 'PNG'} images for this tool.")
+            data = images_to_pdf(
+                images,
+                request.form.get("page_size", "a4"),
+                request.form.get("orientation", "portrait"),
+                request.form.get("margin", "18"),
+                request.form.get("fit", "contain"),
+            )
+            filename, mimetype = f"{slug}.pdf", "application/pdf"
+        else:
+            raise ToolError("That conversion is unavailable.", status_code=404)
+    except ToolError as error:
+        return handle_tool_error(error)
+    except Exception as error:
+        current_app.logger.exception("Document conversion %s failed: %s", slug, error)
+        return handle_tool_error(ToolError("Something went wrong while converting the document."))
+    return send_generated_file(data, filename, mimetype)

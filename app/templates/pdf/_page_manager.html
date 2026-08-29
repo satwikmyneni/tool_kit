@@ -1,0 +1,24 @@
+<section class="pdf-page-manager" data-page-manager data-mode="{{ page_manager_mode|default(tool.slug) }}" hidden>
+  <div class="pdf-manager-heading">
+    <div>
+      <h2>Document pages</h2>
+      <p class="muted" data-pdf-summary></p>
+    </div>
+    <p class="loading" data-preview-loading hidden role="status">
+      <span class="spinner" aria-hidden="true"></span><span>Rendering page previews...</span>
+    </p>
+  </div>
+  <div class="pdf-page-toolbar" aria-label="Page selection controls">
+    <button class="btn btn-secondary" type="button" data-pages-select-all>Select all</button>
+    <button class="btn btn-ghost" type="button" data-pages-clear>Clear selection</button>
+    {% if page_manager_mode|default(tool.slug) == "rotate-pdf" %}
+    <button class="btn btn-secondary" type="button" data-rotate-selected="270" aria-label="Rotate selected pages counterclockwise">Rotate selected left</button>
+    <button class="btn btn-secondary" type="button" data-rotate-selected="90" aria-label="Rotate selected pages clockwise">Rotate selected right</button>
+    {% endif %}
+  </div>
+  <p class="pdf-selection-status" data-selection-status role="status" aria-live="polite"></p>
+  <div class="pdf-page-grid" data-page-grid role="list" aria-label="PDF pages"></div>
+  <div class="alert pdf-preview-limit" data-preview-limit hidden>
+    Only the first <span data-rendered-count></span> pages are shown to protect browser memory. Use Advanced page selection for later pages.
+  </div>
+</section>

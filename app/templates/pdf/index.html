@@ -5,37 +5,20 @@
 <div class="tool-panel">
   <form id="pdf-form" data-tool-form data-max-files="{{ limits.pdf_files }}" data-max-bytes="{{ limits.pdf_file_bytes }}">
     <div class="upload-area" data-dropzone>
-      <label class="field-label" for="pdf-files">PDF files</label>
-      <p>Drag and drop PDFs here, or choose files. Add 2–{{ limits.pdf_files }}, then reorder before merging. Each file may be up to {{ (limits.pdf_file_bytes / 1048576)|round|int }} MB.</p>
-      <input class="field-input" id="pdf-files" name="files" type="file" accept="application/pdf,.pdf" multiple>
+      <svg class="upload-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <label class="field-label" for="pdf-files">Choose PDF files</label>
+      <p>Drag 2-{{ limits.pdf_files }} PDFs here. Reorder files and inspect real page previews before merging.</p>
+      <input class="field-input file-input" id="pdf-files" name="files" type="file" accept="application/pdf,.pdf" multiple>
     </div>
-    <ul class="file-list" data-file-list aria-live="polite"></ul>
-    <div class="tool-actions">
-      <button class="btn btn-primary" type="submit" data-submit>Merge PDFs</button>
-      <button class="btn btn-ghost" type="button" data-reset>Reset</button>
-    </div>
+    <ul class="file-list pdf-merge-list" data-file-list aria-live="polite"></ul>
+    <div class="tool-actions sticky-tool-actions"><button class="btn btn-primary" type="submit" data-submit>Merge PDFs</button><button class="btn btn-ghost" type="button" data-reset>Reset</button></div>
   </form>
-  <p class="loading" data-loading hidden role="status" aria-live="polite">
-    <span class="spinner" aria-hidden="true"></span>
-    <span>Merging PDFs...</span>
-  </p>
+  <p class="loading" data-loading hidden role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><span>Merging PDFs...</span></p>
   <div class="alert alert-error" data-error hidden role="alert"></div>
-  <div class="result-panel" data-result hidden aria-live="polite">
-    <h2>Merged PDF</h2>
-    <p>Your files were combined in the order shown above.</p>
-    <div class="tool-actions">
-      <a class="btn btn-primary" data-download download="merged-pdf.pdf">Download PDF</a>
-    </div>
-  </div>
+  <div class="result-panel success-panel" data-result hidden aria-live="polite"><p class="result-kicker">Complete</p><h2>Merged PDF ready</h2><p>Your validated PDFs were combined in the order shown.</p><div class="tool-actions"><a class="btn btn-primary" data-download download="merged-pdf.pdf">Download merged PDF</a><button class="btn btn-ghost" type="button" data-start-again>Start again</button></div></div>
 </div>
 {% endblock %}
 
-{% block tool_info %}
-<h2>About this tool</h2>
-<p>PDFs are uploaded to the server, validated, merged in your chosen order, and then discarded. Original filenames are not used as server paths. Encrypted PDFs are not supported.</p>
-{% endblock %}
+{% block tool_info %}<div class="content-grid"><div><h2>Arrange with confidence</h2><p>Drag file cards or use the Up and Down controls. Expand any file to view bounded, low-resolution previews of its actual pages.</p></div><div><h2>Temporary processing</h2><p>PDFs are validated, merged in memory for this request, and discarded. Original filenames are never used as server paths.</p></div></div>{% endblock %}
 
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script>
-<script src="{{ url_for('static', filename='js/pdf.js') }}"></script>
-{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script><script src="{{ url_for('static', filename='js/pdf.js') }}"></script>{% endblock %}

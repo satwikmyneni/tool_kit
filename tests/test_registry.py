@@ -29,14 +29,16 @@ def test_all_tools_available():
 
 
 def test_expanded_tool_catalog_exists():
-    assert len(get_tools()) == 85
+    assert len(get_tools()) == 95
 
 
 def test_routes_are_unique_and_match_slugs():
     routes = [tool["route"] for tool in get_tools()]
     assert len(routes) == len(set(routes))
     for tool in get_tools():
-        assert tool["route"] == f"/tools/{tool['slug']}"
+        assert tool["route"].endswith(f"/{tool['slug']}")
+    assert get_tool("pdf-to-word")["route"] == "/pdf-to-word"
+    assert get_tool("word-to-pdf")["route"] == "/word-to-pdf"
 
 
 def test_lookup_and_grouping():

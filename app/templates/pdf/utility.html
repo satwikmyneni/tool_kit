@@ -1,57 +1,63 @@
 {% extends "tool_page.html" %}
 {% set container_class = "tool-wide" %}
+{% set visual_slugs = ["pdf-splitter", "rotate-pdf", "delete-pdf-pages", "extract-pdf-pages", "reorder-pdf-pages"] %}
 
 {% block tool_main %}
 <div class="tool-panel">
   <form id="pdf-utility-form" data-tool-form data-tool-slug="{{ tool.slug }}" data-max-files="{{ limits.image_files }}" data-max-bytes="{{ limits.pdf_file_bytes }}">
     <div class="upload-area" data-dropzone>
-      <label class="field-label" for="utility-files">{{ "Images" if tool.slug == "images-to-pdf" else "PDF file" }}</label>
-      <p>{{ "Choose ordered PNG, JPEG, or WEBP images." if tool.slug == "images-to-pdf" else "Choose a PDF up to " ~ ((limits.pdf_file_bytes / 1048576)|round|int) ~ " MB and " ~ limits.pdf_pages ~ " pages." }}</p>
-      <input class="field-input" id="utility-files" name="{{ 'images' if tool.slug == 'images-to-pdf' else 'pdf' }}" type="file" {% if tool.slug == "images-to-pdf" %}accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple{% else %}accept="application/pdf,.pdf"{% endif %} required>
+      <svg class="upload-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <label class="field-label" for="utility-files">{{ "Choose images" if tool.slug == "images-to-pdf" else "Choose a PDF" }}</label>
+      <p>{{ "Drag ordered PNG, JPEG, or WEBP images here." if tool.slug == "images-to-pdf" else "Drag one PDF here, up to " ~ ((limits.pdf_file_bytes / 1048576)|round|int) ~ " MB and " ~ limits.pdf_pages ~ " pages." }}</p>
+      <input class="field-input file-input" id="utility-files" name="{{ 'images' if tool.slug == 'images-to-pdf' else 'pdf' }}" type="file" {% if tool.slug == "images-to-pdf" %}accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple{% else %}accept="application/pdf,.pdf" required{% endif %}>
     </div>
+
+    {% if tool.slug in visual_slugs %}
+      {% set page_manager_mode = tool.slug %}{% include "pdf/_page_manager.html" %}
+    {% endif %}
+
     {% if tool.slug == "images-to-pdf" %}
       <ul class="file-list" data-file-list aria-live="polite"></ul>
-      <div class="field-grid">
+      <div class="field-grid options-panel">
         <div class="field"><label class="field-label" for="page-size">Page size</label><select class="field-select" id="page-size" name="page_size"><option value="a4">A4</option><option value="letter">Letter</option><option value="auto">Match image</option></select></div>
         <div class="field"><label class="field-label" for="orientation">Orientation</label><select class="field-select" id="orientation" name="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div>
         <div class="field"><label class="field-label" for="margin">Margin (points)</label><input class="field-input" id="margin" name="margin" type="number" min="0" max="144" value="18"></div>
-        <div class="field"><label class="field-label" for="fit">Fit</label><select class="field-select" id="fit" name="fit"><option value="contain">Fit entire image</option><option value="cover">Fill and crop</option></select></div>
+        <div class="field"><label class="field-label" for="fit">Image fit</label><select class="field-select" id="fit" name="fit"><option value="contain">Fit entire image</option><option value="cover">Fill and crop</option></select></div>
       </div>
     {% elif tool.slug == "pdf-splitter" %}
-      <div class="field-grid">
-        <div class="field"><label class="field-label" for="split-mode">Split mode</label><select class="field-select" id="split-mode" name="mode"><option value="selected">Extract one selection</option><option value="every">Split every page</option><option value="ranges">Separate ranges</option></select></div>
-        <div class="field"><label class="field-label" for="pages">Pages or ranges</label><input class="field-input" id="pages" name="pages" value="1" placeholder="1,3-5 or 1-3;4-6"><p class="field-hint">Use semicolons between separate range files.</p></div>
-      </div>
+      <div class="field options-panel"><label class="field-label" for="split-mode">Split mode</label><select class="field-select" id="split-mode" name="mode"><option value="selected">Create one PDF from selected pages</option><option value="every">Split every page into a ZIP</option><option value="ranges">Create separate range files</option></select></div>
+      <details class="advanced-options"><summary>Advanced page selection</summary><div class="field"><label class="field-label" for="pages">Pages or ranges</label><input class="field-input" id="pages" name="pages" value="1" placeholder="1,3-5 or 1-3;4-6"><p class="field-hint">Use semicolons between separate range files.</p></div></details>
     {% elif tool.slug == "pdf-compressor" %}
-      <div class="field"><label class="field-label" for="level">Lossless compression level</label><select class="field-select" id="level" name="level"><option value="light">Light / faster</option><option value="balanced" selected>Balanced</option><option value="maximum">Maximum / slower</option></select><p class="field-hint">Embedded images are not degraded; some PDFs may not become smaller.</p></div>
+      <div class="field options-panel"><label class="field-label" for="level">Lossless compression level</label><select class="field-select" id="level" name="level"><option value="light">Light / faster</option><option value="balanced" selected>Balanced</option><option value="maximum">Maximum / slower</option></select><p class="field-hint">Embedded images are not degraded; already optimized PDFs may not become smaller.</p></div>
     {% elif tool.slug == "rotate-pdf" %}
-      <div class="field-grid"><div class="field"><label class="field-label" for="pages">Pages</label><input class="field-input" id="pages" name="pages" value="all" placeholder="all or 1,3-5"></div><div class="field"><label class="field-label" for="degrees">Clockwise rotation</label><select class="field-select" id="degrees" name="degrees"><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></div></div>
+      <input id="rotations" name="rotations" type="hidden">
+      <details class="advanced-options"><summary>Advanced uniform rotation</summary><div class="field-grid"><div class="field"><label class="field-label" for="pages">Pages</label><input class="field-input" id="pages" name="pages" value="all" placeholder="all or 1,3-5"></div><div class="field"><label class="field-label" for="degrees">Clockwise rotation</label><select class="field-select" id="degrees" name="degrees"><option value="90">90 degrees</option><option value="180">180 degrees</option><option value="270">270 degrees</option></select></div></div><p class="field-hint">This fallback is used when no visual per-page rotations are set.</p></details>
     {% elif tool.slug in ["delete-pdf-pages", "extract-pdf-pages"] %}
-      <div class="field"><label class="field-label" for="pages">Pages to {{ 'delete' if tool.slug == 'delete-pdf-pages' else 'extract' }}</label><input class="field-input" id="pages" name="pages" placeholder="1,3-5" required></div>
+      <details class="advanced-options"><summary>Advanced page selection</summary><div class="field"><label class="field-label" for="pages">Pages to {{ 'delete' if tool.slug == 'delete-pdf-pages' else 'extract' }}</label><input class="field-input" id="pages" name="pages" placeholder="1,3-5"></div></details>
     {% elif tool.slug == "reorder-pdf-pages" %}
-      <div class="field"><label class="field-label" for="pages">New page order</label><input class="field-input" id="pages" name="pages" placeholder="3,1,2 or 1-3,3" required><p class="field-hint">Duplicates are allowed; omitted pages are left out.</p></div>
+      <details class="advanced-options"><summary>Advanced page order</summary><div class="field"><label class="field-label" for="pages">New page order</label><input class="field-input" id="pages" name="pages" placeholder="3,1,2 or 1-3,3"><p class="field-hint">Duplicates are supported here; omitted pages are left out.</p></div></details>
     {% elif tool.slug == "pdf-metadata" %}
-      <div class="field-grid"><div class="field"><label class="field-label" for="title">Title</label><input class="field-input" id="title" name="title" maxlength="1000"></div><div class="field"><label class="field-label" for="author">Author</label><input class="field-input" id="author" name="author" maxlength="1000"></div><div class="field"><label class="field-label" for="subject">Subject</label><input class="field-input" id="subject" name="subject" maxlength="1000"></div><div class="field"><label class="field-label" for="creator">Creator</label><input class="field-input" id="creator" name="creator" maxlength="1000" value="Toolbox"></div><div class="field"><label class="field-label" for="password">Password, if encrypted</label><input class="field-input" id="password" name="password" type="password" autocomplete="current-password"></div></div>
+      <div class="field-grid options-panel"><div class="field"><label class="field-label" for="title">Title</label><input class="field-input" id="title" name="title" maxlength="1000"></div><div class="field"><label class="field-label" for="author">Author</label><input class="field-input" id="author" name="author" maxlength="1000"></div><div class="field"><label class="field-label" for="subject">Subject</label><input class="field-input" id="subject" name="subject" maxlength="1000"></div><div class="field"><label class="field-label" for="creator">Creator</label><input class="field-input" id="creator" name="creator" maxlength="1000" value="Toolbox"></div><div class="field"><label class="field-label" for="password">Password, if encrypted</label><input class="field-input" id="password" name="password" type="password" autocomplete="current-password"></div></div>
       <button class="btn btn-secondary" type="button" data-inspect>Read metadata</button>
     {% elif tool.slug in ["protect-pdf", "unlock-pdf"] %}
-      <div class="field"><label class="field-label" for="password">PDF password</label><input class="field-input" id="password" name="password" type="password" minlength="4" maxlength="128" autocomplete="new-password" required></div>
+      <div class="field options-panel"><label class="field-label" for="password">PDF password</label><input class="field-input" id="password" name="password" type="password" minlength="4" maxlength="128" autocomplete="{{ 'new-password' if tool.slug == 'protect-pdf' else 'current-password' }}" required></div>
     {% elif tool.slug == "pdf-inspector" %}
-      <div class="field"><label class="field-label" for="password">Password, if encrypted</label><input class="field-input" id="password" name="password" type="password" autocomplete="current-password"></div>
+      <div class="field options-panel"><label class="field-label" for="password">Password, if encrypted</label><input class="field-input" id="password" name="password" type="password" autocomplete="current-password"></div>
     {% endif %}
 
-    <div class="tool-actions">
+    <div class="tool-actions sticky-tool-actions">
       <button class="btn btn-primary" type="submit" data-submit>{{ "Inspect PDF" if tool.slug == "pdf-inspector" else "Create PDF" if tool.slug == "images-to-pdf" else "Process PDF" }}</button>
       <button class="btn btn-ghost" type="button" data-reset>Reset</button>
     </div>
   </form>
-  <p class="loading" data-loading hidden role="status"><span class="spinner" aria-hidden="true"></span><span>Processing securely…</span></p>
+  <p class="loading" data-loading hidden role="status"><span class="spinner" aria-hidden="true"></span><span>Processing securely...</span></p>
   <div class="alert alert-error" data-error hidden role="alert"></div>
-  <div class="result-panel" data-result hidden aria-live="polite"><h2>Done ✓</h2><div data-details></div><div class="tool-actions"><a class="btn btn-primary" data-download>Download result</a><button class="btn btn-ghost" type="button" data-start-again>Start again</button></div></div>
+  <div class="result-panel success-panel" data-result hidden aria-live="polite"><p class="result-kicker">Complete</p><h2>Your file is ready</h2><div data-details></div><div class="tool-actions"><a class="btn btn-primary" data-download>Download result</a><button class="btn btn-ghost" type="button" data-start-again>Start again</button></div></div>
 </div>
 {% endblock %}
 
 {% block tool_info %}
-<div class="content-grid"><div><h2>Safe temporary processing</h2><p>Files are validated and processed for this request only. They are not put in a public upload directory, and generated responses are not cached.</p></div><div><h2>Page selections</h2><p>Page numbers are one-based. Use commas and ranges such as <code>1,3-5,8</code>. Outputs preserve the order you request.</p></div></div>
+<div class="content-grid"><div><h2>Temporary processing</h2><p>Files are validated and processed for this request only. They are never placed in a public upload folder, and generated responses are marked not to be cached.</p></div><div><h2>Visual and advanced control</h2><p>Real page previews make common selections clear. For long documents or duplicate-page output, open the advanced field and use one-based ranges such as <code>1,3-5,8</code>.</p></div></div>
 {% endblock %}
 
-{% block scripts %}<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script><script src="{{ url_for('static', filename='js/pdf-tools.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script>{% if tool.slug in visual_slugs %}<script src="{{ url_for('static', filename='js/pdf-preview.js') }}"></script>{% endif %}<script src="{{ url_for('static', filename='js/pdf-tools.js') }}"></script>{% endblock %}

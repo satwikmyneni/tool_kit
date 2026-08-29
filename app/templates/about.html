@@ -27,7 +27,8 @@
     <p>These tools upload input so Python can create a result for the current request. Inputs are validated, are never put in a public upload directory, and are not retained as permanent URLs.</p>
     <ul class="plain-list">
       <li>QR Code and Barcode generators</li>
-      <li>PDF merge, split, compress, page organization, metadata, encryption, inspection, and image-to-PDF tools</li>
+      <li>PDF merge, real-page preview, split, compress, page organization, metadata, encryption, inspection, image export, and image-to-PDF tools</li>
+      <li>PDF-to-DOCX/XLSX/PPTX and optional LibreOffice-backed Word/Excel/PowerPoint-to-PDF conversions</li>
       <li>Image background removal, compression, resizing, conversion, crop, rotate, flip, metadata stripping, and optimization</li>
       <li>GIF Maker</li>
     </ul>
@@ -37,7 +38,7 @@
 
     <h3>Local preferences and technical logs</h3>
     <p>Favorites, recent tool slugs, theme preference, expenses, budgets, tasks, notes, and habits are browser-local. Clearing site data removes them. Optional analytics and advertising integrations are disabled by default; analytics events never include private tool inputs or files.</p>
-    <p>Server logs may record route names and technical failures for operations and security. The application does not intentionally log uploaded content, passwords, generated secrets, finance data, or document text.</p>
+    <p>Server logs may record route names and technical failures for operations and security. The application does not intentionally log uploaded content, original filenames, passwords, generated secrets, finance data, preview images, or document text. Temporary Office conversion folders are removed after the request, including failures.</p>
   </div>
 </section>
 {% endblock %}

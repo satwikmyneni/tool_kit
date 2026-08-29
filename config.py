@@ -35,6 +35,7 @@ class Config:
     RATELIMIT_QR = os.environ.get("RATELIMIT_QR", "30 per minute")
     RATELIMIT_BARCODE = os.environ.get("RATELIMIT_BARCODE", "30 per minute")
     RATELIMIT_PDF = os.environ.get("RATELIMIT_PDF", "10 per minute")
+    RATELIMIT_PDF_PREVIEW = os.environ.get("RATELIMIT_PDF_PREVIEW", "30 per minute")
     RATELIMIT_IMAGE = os.environ.get("RATELIMIT_IMAGE", "5 per minute")
     RATELIMIT_GIF = os.environ.get("RATELIMIT_GIF", "10 per minute")
     RATELIMIT_TTS = os.environ.get("RATELIMIT_TTS", "10 per minute")
@@ -46,6 +47,15 @@ class Config:
     MAX_PDF_FILES = _int_env("MAX_PDF_FILES", 20)
     MAX_PDF_FILE_BYTES = _int_env("MAX_PDF_FILE_BYTES", 20 * 1024 * 1024)
     MAX_PDF_PAGES = _int_env("MAX_PDF_PAGES", 500)
+    PDF_PREVIEW_DPI = _int_env("PDF_PREVIEW_DPI", 48)
+    PDF_PREVIEW_MAX_WIDTH = _int_env("PDF_PREVIEW_MAX_WIDTH", 180)
+    PDF_PREVIEW_MAX_HEIGHT = _int_env("PDF_PREVIEW_MAX_HEIGHT", 260)
+    PDF_PREVIEW_MAX_PAGES = _int_env("PDF_PREVIEW_MAX_PAGES", 60)
+    MAX_CONVERSION_PAGES = _int_env("MAX_CONVERSION_PAGES", 100)
+    MAX_CONVERSION_TOTAL_PIXELS = _int_env("MAX_CONVERSION_TOTAL_PIXELS", 80_000_000)
+    MAX_DOCUMENT_FILE_BYTES = _int_env("MAX_DOCUMENT_FILE_BYTES", 20 * 1024 * 1024)
+    DOCUMENT_CONVERSION_TIMEOUT_SECONDS = _int_env("DOCUMENT_CONVERSION_TIMEOUT_SECONDS", 60)
+    LIBREOFFICE_PATH = os.environ.get("LIBREOFFICE_PATH", "").strip()
     MAX_IMAGE_BYTES = _int_env("MAX_IMAGE_BYTES", 10 * 1024 * 1024)
     MAX_IMAGE_FILES = _int_env("MAX_IMAGE_FILES", 20)
     MAX_IMAGE_PIXELS = _int_env("MAX_IMAGE_PIXELS", 20_000_000)
@@ -72,6 +82,7 @@ class TestingConfig(Config):
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024
     MAX_FORM_MEMORY_SIZE = 2 * 1024 * 1024
     MAX_PDF_FILE_BYTES = 512 * 1024
+    MAX_DOCUMENT_FILE_BYTES = 512 * 1024
     MAX_IMAGE_BYTES = 512 * 1024
 
 

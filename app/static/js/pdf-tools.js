@@ -4,6 +4,14 @@
   var slug = form.dataset.toolSlug; var input = document.getElementById("utility-files"); var reset = form.querySelector("[data-reset]"); var inspectButton = form.querySelector("[data-inspect]"); var details = document.querySelector("[data-details]"); var download = document.querySelector("[data-download]"); var files = []; var nextId = 0;
   var names = { "pdf-compressor": "compressed-pdf.pdf", "images-to-pdf": "images-to-pdf.pdf", "rotate-pdf": "rotated-pdf.pdf", "delete-pdf-pages": "pages-deleted.pdf", "extract-pdf-pages": "extracted-pages.pdf", "reorder-pdf-pages": "reordered-pages.pdf", "pdf-metadata": "metadata-updated.pdf", "protect-pdf": "protected-pdf.pdf", "unlock-pdf": "unlocked-pdf.pdf" };
   TC.initDropZone(form.querySelector("[data-dropzone]"), input);
+  var managerRoot = form.querySelector("[data-page-manager]");
+  var pageManager = managerRoot && window.PdfPageManager ? new window.PdfPageManager(managerRoot, input, { mode: slug }) : null;
+  var splitMode = document.getElementById("split-mode");
+  if (splitMode && managerRoot) splitMode.addEventListener("change", function () {
+    managerRoot.hidden = splitMode.value !== "selected" || !pageManager.pages.length;
+    var advanced = form.querySelector(".advanced-options");
+    if (advanced && splitMode.value === "ranges") advanced.open = true;
+  });
 
   function size(bytes) { return TC.humanSize(bytes); }
   function currentUpload() { return input && input.files ? input.files[0] : null; }
@@ -38,6 +46,8 @@
       if (!files.length) return TC.showError("Add at least one image.");
       body = new FormData(); files.forEach(function (item) { body.append("images", item.file); }); ["page_size", "orientation", "margin", "fit"].forEach(function (key) { body.append(key, form.elements[key].value); });
     } else if (!currentUpload()) return TC.showError("Choose a PDF file.");
+    if (["delete-pdf-pages", "extract-pdf-pages", "reorder-pdf-pages"].indexOf(slug) !== -1 && !form.elements.pages.value.trim()) return TC.showError("Select at least one page.");
+    if (slug === "rotate-pdf" && pageManager && pageManager.pages.length && !form.elements.rotations.value && !form.querySelector(".advanced-options").open) return TC.showError("Rotate a page in the preview, or open Advanced uniform rotation.");
     var originalSize = slug === "images-to-pdf" ? files.reduce(function (total, item) { return total + item.file.size; }, 0) : currentUpload().size;
     var blob = await TC.submitForm(form, "/tools/" + slug + "/process", body ? { body: body } : undefined);
     if (!blob) return;
@@ -47,6 +57,6 @@
     details.textContent = copy;
   });
 
-  function resetAll() { files = []; var list = form.querySelector("[data-file-list]"); if (list) list.innerHTML = ""; form.reset(); TC.resetTool(); details.textContent = ""; download.hidden = false; }
+  function resetAll() { files = []; var list = form.querySelector("[data-file-list]"); if (list) list.innerHTML = ""; form.reset(); if (pageManager) pageManager.reset(); TC.resetTool(); details.textContent = ""; download.hidden = false; }
   reset.addEventListener("click", resetAll); var again = document.querySelector("[data-start-again]"); if (again) again.addEventListener("click", resetAll);
 })();

@@ -2,6 +2,7 @@ from flask import Blueprint, current_app, render_template, request, url_for
 
 from app.registry import (
     CATEGORY_INFO,
+    PDF_SUBCATEGORIES,
     get_active_tool_urls,
     get_category,
     get_categories,
@@ -49,11 +50,18 @@ def category():
     slug = request.path.strip("/")
     category = get_category(slug)
     category_tools = get_tools_by_category()[category["name"]]
+    pdf_groups = []
+    if slug == "pdf-tools":
+        pdf_groups = [
+            {"name": name, "tools": [tool for tool in category_tools if tool.get("subcategory") == name]}
+            for name in PDF_SUBCATEGORIES
+        ]
     return render_template(
         "category.html",
         category=category,
         category_tools=category_tools,
         popular_tools=[tool for tool in category_tools if tool.get("popular")],
+        pdf_groups=pdf_groups,
         page_title=f"{category['name']} — Free Online Tools | Toolbox",
         meta_description=category["description"],
         canonical_path=f"/{slug}",

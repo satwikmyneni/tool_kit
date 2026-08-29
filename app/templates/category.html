@@ -15,13 +15,27 @@
   </div>
 </section>
 
-{% if popular_tools %}
+{% if popular_tools and category.slug != "pdf-tools" %}
+{% if category.slug == "pdf-tools" %}
+<section class="section pdf-directory">
+  <div class="container">
+    {% for group in pdf_groups %}
+    <div class="category-block" data-pdf-group>
+      <h2>{{ group.name }}</h2>
+      <div class="tool-grid">{% for tool in group.tools %}{% include "partials/tool_card.html" %}{% endfor %}</div>
+    </div>
+    {% endfor %}
+    <div class="empty-state" data-search-empty hidden><p>No tools match that search.</p></div>
+  </div>
+</section>
+{% else %}
 <section class="section">
   <div class="container">
     <h2>Popular {{ category.name|lower }}</h2>
     <div class="tool-grid">{% for tool in popular_tools %}{% include "partials/tool_card.html" %}{% endfor %}</div>
   </div>
 </section>
+{% endif %}
 {% endif %}
 
 <section class="section">

@@ -55,8 +55,9 @@
   function renderThemeButton() {
     if (!themeButton) return;
     var dark = document.documentElement.dataset.theme === "dark";
-    themeButton.textContent = dark ? "Light theme" : "Dark theme";
     themeButton.setAttribute("aria-pressed", dark ? "true" : "false");
+    themeButton.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+    themeButton.title = dark ? "Switch to light theme" : "Switch to dark theme";
   }
   if (themeButton) {
     renderThemeButton();
