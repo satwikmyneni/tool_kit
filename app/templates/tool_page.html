@@ -7,12 +7,13 @@
 <section class="page-intro">
   <div class="container {{ width }}">
     <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="{{ url_for('main.tools') }}">All tools</a>
+      <a href="/{{ category_info.slug }}">{{ category_info.name }}</a>
       <span aria-hidden="true">/</span>
       <span>{{ tool.name }}</span>
     </nav>
     <h1>{{ tool.name }}</h1>
     <p class="lead">{{ tool.description }}</p>
+    <p class="processing-note"><span class="badge">{{ tool.processing }}</span> processing</p>
   </div>
 </section>
 

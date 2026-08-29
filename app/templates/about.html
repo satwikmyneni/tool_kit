@@ -3,11 +3,7 @@
 {% block content %}
 <section class="page-intro">
   <div class="container narrow">
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="{{ url_for('main.index') }}">Home</a>
-      <span aria-hidden="true">/</span>
-      <span>About</span>
-    </nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="{{ url_for('main.index') }}">Home</a><span aria-hidden="true">/</span><span>About</span></nav>
     <h1>About Toolbox</h1>
     <p class="lead">Simple tools for everyday tasks. No account is required.</p>
   </div>
@@ -16,29 +12,32 @@
 <section class="section" id="data">
   <div class="container narrow">
     <h2>How we handle data</h2>
-    <p>Toolbox is designed so you can finish a small job without creating a profile. We do not require login, and we do not keep a user history of your inputs.</p>
+    <p>Toolbox is designed so you can finish a small job without creating a profile. We do not require login, and we do not maintain a server-side history of your inputs.</p>
 
     <h3>Runs in your browser</h3>
     <ul class="plain-list">
-      <li>Typing Speed Test — keystrokes stay on your device.</li>
-      <li>Expense Tracker — transactions are saved in localStorage on this browser only.</li>
+      <li>Text, JSON, encoding, JWT, hash, and code utilities — inputs stay on your device.</li>
+      <li>Password, UUID, random, color, gradient, and favicon generators — generated values stay local.</li>
+      <li>Calculators and converters — values are calculated locally.</li>
+      <li>Typing, timers, lists, notes, habits, favorites, recent tools, and finance planners — selected state uses localStorage only where useful.</li>
+      <li>Image Color Picker and Audio Format Information — selected files stay in your browser.</li>
     </ul>
 
     <h3>Processed on the Toolbox server</h3>
-    <p>These tools upload input so Python can generate a file. Uploads use generated temporary names, are validated, and are not published as public URLs. Temporary data is deleted after processing when it is safe to do so.</p>
+    <p>These tools upload input so Python can create a result for the current request. Inputs are validated, are never put in a public upload directory, and are not retained as permanent URLs.</p>
     <ul class="plain-list">
-      <li>QR Code Generator</li>
-      <li>Barcode Generator</li>
-      <li>PDF Merger</li>
-      <li>Image Background Remover</li>
+      <li>QR Code and Barcode generators</li>
+      <li>PDF merge, split, compress, page organization, metadata, encryption, inspection, and image-to-PDF tools</li>
+      <li>Image background removal, compression, resizing, conversion, crop, rotate, flip, metadata stripping, and optimization</li>
       <li>GIF Maker</li>
     </ul>
 
     <h3>External provider</h3>
-    <p>Text to Speech uses gTTS, which sends the text you submit to Google to synthesize audio. Do not enter confidential text in that tool. Toolbox does not store the text after the MP3 is returned.</p>
+    <p>Text to Speech uses gTTS, which sends submitted text to Google to synthesize audio. Do not enter confidential text in that tool. Toolbox does not retain the text after the response.</p>
 
-    <h3>What we do not do</h3>
-    <p>We do not sell accounts, payments, or invasive analytics in this version. Server logs may record technical errors for debugging. They are not a product analytics profile.</p>
+    <h3>Local preferences and technical logs</h3>
+    <p>Favorites, recent tool slugs, theme preference, expenses, budgets, tasks, notes, and habits are browser-local. Clearing site data removes them. Optional analytics and advertising integrations are disabled by default; analytics events never include private tool inputs or files.</p>
+    <p>Server logs may record route names and technical failures for operations and security. The application does not intentionally log uploaded content, passwords, generated secrets, finance data, or document text.</p>
   </div>
 </section>
 {% endblock %}

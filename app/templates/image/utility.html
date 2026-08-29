@@ -1,0 +1,42 @@
+{% extends "tool_page.html" %}
+{% set container_class = "tool-wide" %}
+
+{% block tool_main %}
+<div class="tool-panel">
+  <form id="image-utility-form" data-tool-form data-tool-slug="{{ tool.slug }}" data-max-bytes="{{ limits.image_bytes }}">
+    <div class="upload-area" data-dropzone>
+      <label class="field-label" for="image-file">Image</label>
+      <p>Choose a PNG, JPEG, or WEBP up to {{ (limits.image_bytes / 1048576)|round|int }} MB and {{ limits.image_edge }} px per edge.</p>
+      <input class="field-input" id="image-file" name="image" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" required>
+    </div>
+    <div class="preview-row" data-source-preview hidden><img data-source-image alt="Selected image preview"></div>
+
+    {% if tool.slug in ["image-compressor", "image-converter", "image-resizer", "image-format-optimizer"] %}
+      <div class="field-grid">
+      {% if tool.slug != "image-format-optimizer" %}<div class="field"><label class="field-label" for="format">Output format</label><select class="field-select" id="format" name="format"><option value="webp">WEBP</option><option value="jpeg">JPEG</option><option value="png">PNG</option></select></div>{% endif %}
+      <div class="field"><label class="field-label" for="quality">Quality</label><input class="field-input" id="quality" name="quality" type="range" min="1" max="100" value="85"><p class="field-hint"><span data-quality>85</span>% (PNG remains lossless)</p></div>
+      </div>
+    {% endif %}
+    {% if tool.slug == "image-resizer" %}
+      <div class="field-grid"><div class="field"><label class="field-label" for="width">Width</label><input class="field-input" id="width" name="width" type="number" min="1" max="{{ limits.image_edge }}" placeholder="e.g. 1200"></div><div class="field"><label class="field-label" for="height">Height</label><input class="field-input" id="height" name="height" type="number" min="1" max="{{ limits.image_edge }}" placeholder="e.g. 800"></div></div><fieldset class="option-group"><legend>Resize behavior</legend><label><input type="checkbox" name="keep_aspect_check" data-aspect checked> Keep aspect ratio</label><label><input type="checkbox" name="allow_upscale_check" data-upscale> Allow upscaling</label></fieldset><input type="hidden" name="keep_aspect" value="true"><input type="hidden" name="allow_upscale" value="false">
+    {% elif tool.slug == "image-cropper" %}
+      <div class="field-grid"><div class="field"><label class="field-label" for="x">Left (px)</label><input class="field-input" id="x" name="x" type="number" min="0" value="0"></div><div class="field"><label class="field-label" for="y">Top (px)</label><input class="field-input" id="y" name="y" type="number" min="0" value="0"></div><div class="field"><label class="field-label" for="width">Width</label><input class="field-input" id="width" name="width" type="number" min="1" required></div><div class="field"><label class="field-label" for="height">Height</label><input class="field-input" id="height" name="height" type="number" min="1" required></div></div><input type="hidden" name="format" value="png">
+    {% elif tool.slug == "image-rotator" %}
+      <div class="field"><label class="field-label" for="degrees">Clockwise rotation</label><select class="field-select" id="degrees" name="degrees"><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></div><input type="hidden" name="format" value="png">
+    {% elif tool.slug == "image-flipper" %}
+      <div class="field"><label class="field-label" for="direction">Direction</label><select class="field-select" id="direction" name="direction"><option value="horizontal">Horizontal mirror</option><option value="vertical">Vertical flip</option></select></div><input type="hidden" name="format" value="png">
+    {% elif tool.slug == "image-metadata" %}
+      <button class="btn btn-secondary" type="button" data-inspect>Inspect metadata</button>
+    {% endif %}
+
+    <div class="tool-actions"><button class="btn btn-primary" type="submit" data-submit>{{ "Strip metadata and download" if tool.slug == "image-metadata" else "Process image" }}</button><button class="btn btn-ghost" type="button" data-reset>Reset</button></div>
+  </form>
+  <p class="loading" data-loading hidden role="status"><span class="spinner" aria-hidden="true"></span><span>Processing image…</span></p>
+  <div class="alert alert-error" data-error hidden role="alert"></div>
+  <div class="result-panel" data-result hidden aria-live="polite"><h2>Done ✓</h2><p data-details>Image ready.</p><div class="preview-row checkerboard"><img data-preview alt="Processed image preview"></div><div class="tool-actions"><a class="btn btn-primary" data-download>Download image</a><button class="btn btn-ghost" type="button" data-start-again>Start again</button></div></div>
+</div>
+{% endblock %}
+
+{% block tool_info %}<div class="content-grid"><div><h2>Image safety</h2><p>Toolbox validates the file type, decoded dimensions, pixel count, and file size before processing. Files are not published or retained as permanent URLs.</p></div><div><h2>Quality and transparency</h2><p>PNG remains lossless. WEBP preserves alpha transparency; JPEG uses a white background because JPEG has no alpha channel.</p></div></div>{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script><script src="{{ url_for('static', filename='js/image-utility.js') }}"></script>{% endblock %}

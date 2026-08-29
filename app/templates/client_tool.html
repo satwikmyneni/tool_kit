@@ -1,0 +1,29 @@
+{% extends "tool_page.html" %}
+{% set container_class = "tool-wide" %}
+
+{% block tool_main %}
+<div class="tool-panel client-tool" id="client-tool" data-client-tool data-tool-slug="{{ tool.slug }}" data-tool-group="{{ client_group }}">
+  <div data-client-app></div>
+  <div class="alert alert-error" data-client-error hidden role="alert"></div>
+  <div class="result-panel" data-client-result hidden aria-live="polite"></div>
+  <noscript><p class="alert alert-error">This private browser tool requires JavaScript.</p></noscript>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<div class="content-grid">
+  <div>
+    <h2>How to use {{ tool.name }}</h2>
+    <p>Enter or choose your values, run the tool, and copy or download the result where available. Reset starts a clean calculation.</p>
+  </div>
+  <div>
+    <h2>Private browser processing</h2>
+    <p>This utility runs in your browser. Toolbox does not send its inputs to the server. Saved state is used only where the tool clearly says so.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/client-common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/' + client_group + '-tools.js') }}"></script>
+{% endblock %}

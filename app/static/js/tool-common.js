@@ -68,6 +68,9 @@
       el.textContent = message;
       show(el);
     }
+    if (window.ToolboxAnalytics) {
+      window.ToolboxAnalytics.track("error", { tool: document.body.dataset.toolSlug || "" });
+    }
   }
 
   function hideError() {
@@ -143,6 +146,9 @@
 
       var blob = await response.blob();
       hideLoading();
+      if (window.ToolboxAnalytics) {
+        window.ToolboxAnalytics.track("tool_complete", { tool: document.body.dataset.toolSlug || "" });
+      }
       return blob;
     } catch (err) {
       showError("Network error. Please check your connection and try again.");
@@ -166,6 +172,7 @@
       if (filename) download.download = filename;
     }
     showResult();
+    if (window.ToolboxAnalytics) window.ToolboxAnalytics.track("download", { tool: document.body.dataset.toolSlug || "" });
   }
 
   /**
@@ -185,6 +192,7 @@
       if (filename) download.download = filename;
     }
     showResult();
+    if (window.ToolboxAnalytics) window.ToolboxAnalytics.track("download", { tool: document.body.dataset.toolSlug || "" });
   }
 
   /**
@@ -199,6 +207,7 @@
       if (filename) download.download = filename;
     }
     showResult();
+    if (window.ToolboxAnalytics) window.ToolboxAnalytics.track("download", { tool: document.body.dataset.toolSlug || "" });
   }
 
   /* ---- Drag-and-drop zone ---- */

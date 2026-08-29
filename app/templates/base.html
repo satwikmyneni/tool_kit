@@ -11,19 +11,31 @@
   <meta property="og:title" content="{{ page_title or "Toolbox" }}">
   <meta property="og:description" content="{{ meta_description or "Simple tools for everyday tasks." }}">
   <meta property="og:url" content="{{ base_url }}{{ canonical_path }}">
+  <meta property="og:image" content="{{ base_url }}{{ url_for('static', filename='icons/logo.svg') }}">
+  <meta name="theme-color" content="#176b52">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="icon" href="{{ url_for('static', filename='icons/favicon.svg') }}" type="image/svg+xml">
+  <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tools.css') }}">
 </head>
-<body>
+<body data-tool-slug="{{ tool.slug if tool is defined and tool else '' }}" data-analytics-provider="{{ analytics_provider }}">
   <a class="skip-link" href="#main">Skip to content</a>
   {% include "partials/header.html" %}
   <main id="main">
     {% block content %}{% endblock %}
   </main>
   {% include "partials/footer.html" %}
+  <script type="application/ld+json">{{ {
+    "@context": "https://schema.org",
+    "@type": "WebApplication" if tool is defined and tool else "WebSite",
+    "name": tool.name if tool is defined and tool else "Toolbox",
+    "url": base_url ~ canonical_path,
+    "description": meta_description or "Simple tools for everyday tasks.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any"
+  }|tojson }}</script>
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>

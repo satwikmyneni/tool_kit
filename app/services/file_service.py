@@ -72,7 +72,7 @@ def validate_upload_metadata(file_storage, extensions, mimetypes, type_message):
         raise ToolError(type_message)
 
 
-def read_pdf_upload(file_storage, max_bytes):
+def read_pdf_upload(file_storage, max_bytes, allow_encrypted=False):
     if file_storage is None or not getattr(file_storage, "filename", None):
         raise ToolError("Please choose a PDF file.")
     validate_upload_metadata(
@@ -82,7 +82,7 @@ def read_pdf_upload(file_storage, max_bytes):
         "Please upload a PDF file with a .pdf extension.",
     )
     data = read_upload(file_storage, max_bytes)
-    return validate_pdf_bytes(data)
+    return validate_pdf_bytes(data, allow_encrypted=allow_encrypted)
 
 
 def read_image_upload(file_storage, max_bytes):
@@ -107,15 +107,20 @@ def looks_like_image(data):
     return len(data) >= 12 and data.startswith(WEBP_RIFF) and data[8:12] == WEBP_WEBP
 
 
-def validate_pdf_bytes(data):
+def validate_pdf_bytes(data, allow_encrypted=False):
     if not looks_like_pdf(data):
         raise ToolError("Please upload a valid PDF file.")
     try:
         reader = PdfReader(io.BytesIO(data), strict=False)
-        if reader.is_encrypted:
+        if reader.is_encrypted and not allow_encrypted:
             raise ToolError("Encrypted PDFs cannot be merged. Remove the password and try again.")
-        if len(reader.pages) < 1:
+        if reader.is_encrypted:
+            return data
+        page_count = len(reader.pages)
+        if page_count < 1:
             raise ToolError("That PDF has no pages.")
+        if page_count > current_app.config["MAX_PDF_PAGES"]:
+            raise ToolError(f"That PDF has more than {current_app.config['MAX_PDF_PAGES']} pages.")
     except ToolError:
         raise
     except (PdfReadError, ValueError, OSError) as exc:

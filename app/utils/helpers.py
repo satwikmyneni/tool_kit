@@ -32,15 +32,19 @@ def send_generated_file(data, filename, mimetype):
 
 
 def tool_page_context(slug, extra=None):
-    from app.registry import get_related_tools, get_tool
+    from app.registry import CATEGORY_INFO, get_related_tools, get_tool
 
     tool = get_tool(slug)
     context = {
         "tool": tool,
         "related_tools": get_related_tools(slug),
-        "page_title": f"{tool['name']} — Toolbox",
-        "meta_description": tool["description"],
+        "page_title": tool["seo_title"],
+        "meta_description": tool["seo_description"],
         "canonical_path": f"/tools/{tool['slug']}",
+        "category_info": {
+            "name": tool["category"],
+            "slug": CATEGORY_INFO[tool["category"]][0],
+        },
     }
     if extra:
         context.update(extra)

@@ -9,7 +9,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_wtf.csrf import CSRFError
 
 from config import get_config
-from app.registry import get_tools
+from app.registry import CATEGORY_INFO, get_tools
 from app.utils.errors import ToolError
 from app.utils.security import apply_security_headers
 
@@ -69,6 +69,7 @@ def _register_blueprints(app):
     from app.routes.qr import bp as qr_bp
     from app.routes.tts import bp as tts_bp
     from app.routes.typing_test import bp as typing_bp
+    from app.routes.browser_tools import bp as browser_tools_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(qr_bp)
@@ -79,6 +80,7 @@ def _register_blueprints(app):
     app.register_blueprint(gif_bp)
     app.register_blueprint(tts_bp)
     app.register_blueprint(expense_bp)
+    app.register_blueprint(browser_tools_bp)
 
 
 def _register_context(app):
@@ -86,14 +88,19 @@ def _register_context(app):
     def inject_globals():
         return {
             "tools": get_tools(),
+            "category_info": CATEGORY_INFO,
             "base_url": app.config["BASE_URL"],
+            "ads_enabled": app.config["ADS_ENABLED"],
+            "analytics_provider": app.config["ANALYTICS_PROVIDER"],
             "limits": {
                 "qr_chars": app.config["MAX_QR_CHARS"],
                 "barcode_chars": app.config["MAX_BARCODE_CHARS"],
                 "tts_chars": app.config["MAX_TTS_CHARS"],
                 "pdf_files": app.config["MAX_PDF_FILES"],
                 "pdf_file_bytes": app.config["MAX_PDF_FILE_BYTES"],
+                "pdf_pages": app.config["MAX_PDF_PAGES"],
                 "image_bytes": app.config["MAX_IMAGE_BYTES"],
+                "image_files": app.config["MAX_IMAGE_FILES"],
                 "gif_frames": app.config["MAX_GIF_FRAMES"],
                 "image_edge": app.config["MAX_IMAGE_EDGE"],
             },

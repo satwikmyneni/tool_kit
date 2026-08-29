@@ -26,6 +26,9 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SEND_FILE_MAX_AGE_DEFAULT = 31536000
+    ADS_ENABLED = os.environ.get("ADS_ENABLED", "false").lower() == "true"
+    ANALYTICS_PROVIDER = os.environ.get("ANALYTICS_PROVIDER", "").strip()
+    PRODUCT_TIER = os.environ.get("PRODUCT_TIER", "FREE").upper()
 
     RATELIMIT_ENABLED = os.environ.get("RATELIMIT_ENABLED", "true").lower() != "false"
     RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
@@ -42,7 +45,9 @@ class Config:
     TTS_TIMEOUT_SECONDS = _int_env("TTS_TIMEOUT_SECONDS", 30)
     MAX_PDF_FILES = _int_env("MAX_PDF_FILES", 20)
     MAX_PDF_FILE_BYTES = _int_env("MAX_PDF_FILE_BYTES", 20 * 1024 * 1024)
+    MAX_PDF_PAGES = _int_env("MAX_PDF_PAGES", 500)
     MAX_IMAGE_BYTES = _int_env("MAX_IMAGE_BYTES", 10 * 1024 * 1024)
+    MAX_IMAGE_FILES = _int_env("MAX_IMAGE_FILES", 20)
     MAX_IMAGE_PIXELS = _int_env("MAX_IMAGE_PIXELS", 20_000_000)
     MAX_GIF_FRAMES = _int_env("MAX_GIF_FRAMES", 24)
     MAX_GIF_TOTAL_PIXELS = _int_env("MAX_GIF_TOTAL_PIXELS", 24_000_000)

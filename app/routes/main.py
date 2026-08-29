@@ -1,7 +1,9 @@
 from flask import Blueprint, current_app, render_template, request, url_for
 
 from app.registry import (
+    CATEGORY_INFO,
     get_active_tool_urls,
+    get_category,
     get_categories,
     get_popular_tools,
     get_tools_by_category,
@@ -28,9 +30,33 @@ def tools():
     return render_template(
         "tools.html",
         page_title="All tools — Toolbox",
-        meta_description="Browse Toolbox utilities for generating codes, working with files, and everyday tasks.",
+        meta_description="Browse free Toolbox utilities for PDFs, images, text, development, calculations, productivity, finance, and media.",
         canonical_path="/tools",
         tools_by_category=get_tools_by_category(),
+    )
+
+
+@bp.route("/pdf-tools")
+@bp.route("/image-tools")
+@bp.route("/text-tools")
+@bp.route("/developer-tools")
+@bp.route("/generators")
+@bp.route("/calculators")
+@bp.route("/productivity-tools")
+@bp.route("/finance-tools")
+@bp.route("/media-tools")
+def category():
+    slug = request.path.strip("/")
+    category = get_category(slug)
+    category_tools = get_tools_by_category()[category["name"]]
+    return render_template(
+        "category.html",
+        category=category,
+        category_tools=category_tools,
+        popular_tools=[tool for tool in category_tools if tool.get("popular")],
+        page_title=f"{category['name']} — Free Online Tools | Toolbox",
+        meta_description=category["description"],
+        canonical_path=f"/{slug}",
     )
 
 
@@ -66,6 +92,8 @@ def sitemap():
         {"loc": f"{base}/tools", "changefreq": "weekly", "priority": "0.8"},
         {"loc": f"{base}/about", "changefreq": "monthly", "priority": "0.4"},
     ]
+    for category_slug, _description in CATEGORY_INFO.values():
+        pages.append({"loc": f"{base}/{category_slug}", "changefreq": "weekly", "priority": "0.8"})
     for path in get_active_tool_urls():
         pages.append({"loc": f"{base}{path}", "changefreq": "monthly", "priority": "0.7"})
     xml_items = []
@@ -84,6 +112,15 @@ def sitemap():
         + "\n</urlset>\n"
     )
     return current_app.response_class(xml, mimetype="application/xml")
+
+
+@bp.route("/service-worker.js")
+def service_worker():
+    response = current_app.send_static_file("service-worker.js")
+    response.headers["Content-Type"] = "application/javascript"
+    response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
 
 
 @bp.app_context_processor

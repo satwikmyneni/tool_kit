@@ -13,6 +13,13 @@
   </div>
 </section>
 
+<section class="section personalized-tools" data-personalized hidden>
+  <div class="container">
+    <div data-favorites-section hidden><h2>Your favorites</h2><div class="tool-grid" data-favorites-grid></div></div>
+    <div data-recent-section hidden><h2>Recently used</h2><div class="tool-grid" data-recent-grid></div></div>
+  </div>
+</section>
+
 <section class="section" id="search">
   <div class="container">
     <label class="field-label" for="tool-search">Search tools</label>
@@ -37,7 +44,7 @@
     <h2>Categories</h2>
     <div class="category-list">
       {% for category in categories %}
-      <a class="category-chip" href="#category-{{ category|lower|replace(' ', '-') }}">{{ category }}</a>
+      <a class="category-chip" href="/{{ category_info[category][0] }}">{{ category }}</a>
       {% endfor %}
     </div>
   </div>

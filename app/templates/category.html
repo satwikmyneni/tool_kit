@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-intro">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="{{ url_for('main.index') }}">Home</a><span aria-hidden="true">/</span><span>{{ category.name }}</span>
+    </nav>
+    <p class="eyebrow">Tool category</p>
+    <h1>{{ category.name }}</h1>
+    <p class="lead">{{ category.description }}</p>
+    <label class="field-label" for="tool-search">Search {{ category.name|lower }}</label>
+    <input class="field-input" id="tool-search" type="search" placeholder="Search this category" autocomplete="off" data-tool-search>
+    <p class="muted" data-search-status role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+{% if popular_tools %}
+<section class="section">
+  <div class="container">
+    <h2>Popular {{ category.name|lower }}</h2>
+    <div class="tool-grid">{% for tool in popular_tools %}{% include "partials/tool_card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container category-block">
+    <h2>All {{ category.name|lower }}</h2>
+    <div class="tool-grid">{% for tool in category_tools %}{% include "partials/tool_card.html" %}{% endfor %}</div>
+    <div class="empty-state" data-search-empty hidden><p>No tools match that search.</p></div>
+  </div>
+</section>
+
+<section class="section section-privacy">
+  <div class="container narrow">
+    <h2>Built for focused, private work</h2>
+    <p>Each card states whether work happens in your browser, on the Toolbox server for the current request, or through an external provider. No account is required.</p>
+  </div>
+</section>
+{% endblock %}

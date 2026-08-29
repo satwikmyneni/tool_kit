@@ -29,20 +29,29 @@ def test_about_page_ok(client):
 
 
 def test_tool_pages_load(client):
-    """All eight tool pages must return 200."""
-    slugs = [
-        "qr-generator",
-        "barcode-generator",
-        "typing-test",
-        "pdf-merger",
-        "background-remover",
-        "gif-maker",
-        "text-to-speech",
-        "expense-tracker",
-    ]
-    for slug in slugs:
-        response = client.get(f"/tools/{slug}")
-        assert response.status_code == 200, f"/tools/{slug} returned {response.status_code}"
+    """Every discoverable tool page must return 200."""
+    from app.registry import get_tools
+
+    for tool in get_tools():
+        response = client.get(tool["route"])
+        assert response.status_code == 200, f"{tool['route']} returned {response.status_code}"
+
+
+def test_all_category_pages_load(client):
+    for path in ["pdf-tools", "image-tools", "text-tools", "developer-tools", "generators", "calculators", "productivity-tools", "finance-tools", "media-tools"]:
+        response = client.get(f"/{path}")
+        assert response.status_code == 200
+        assert b"Tool category" in response.data
+
+
+def test_pwa_manifest_and_service_worker_are_public_asset_only(client):
+    manifest = client.get("/static/site.webmanifest")
+    worker = client.get("/service-worker.js")
+    assert manifest.status_code == 200
+    assert b'"display": "standalone"' in manifest.data
+    assert worker.status_code == 200
+    assert b'url.pathname.startsWith("/static/")' in worker.data
+    assert b"uploaded" not in worker.data.lower()
 
 
 def test_robots_and_sitemap(client):

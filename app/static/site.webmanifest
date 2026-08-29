@@ -1,0 +1,13 @@
+{
+  "name": "Toolbox — Simple tools for everyday tasks",
+  "short_name": "Toolbox",
+  "description": "Fast, focused, account-free online utilities.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f9f7",
+  "theme_color": "#176b52",
+  "icons": [
+    {"src": "/static/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}

@@ -17,19 +17,19 @@ def test_registry_has_unique_slugs():
 
 
 def test_required_tool_fields():
-    required = {"slug", "name", "category", "description", "route", "icon", "status", "keywords"}
+    required = {"slug", "name", "category", "description", "route", "icon", "status", "keywords", "popularity", "seo_title", "seo_description"}
     for tool in get_tools():
         assert required.issubset(tool.keys()), f"Tool '{tool['slug']}' missing fields"
 
 
 def test_all_tools_available():
-    """All eight tools must have status 'available'."""
+    """Only complete, available tools are discoverable."""
     for tool in get_tools():
         assert tool["status"] == STATUS_AVAILABLE, f"Tool '{tool['slug']}' is not available"
 
 
-def test_eight_tools_exist():
-    assert len(get_tools()) == 8
+def test_expanded_tool_catalog_exists():
+    assert len(get_tools()) == 85
 
 
 def test_routes_are_unique_and_match_slugs():
@@ -43,9 +43,9 @@ def test_lookup_and_grouping():
     tool = get_tool("pdf-merger")
     assert tool["name"] == "PDF Merger"
     assert "Generators" in get_categories()
-    assert "Documents" in get_categories()
+    assert "PDF & Documents" in get_categories()
     grouped = get_tools_by_category()
-    assert grouped["Documents"][0]["slug"] == "pdf-merger"
+    assert grouped["PDF & Documents"][0]["slug"] == "pdf-merger"
     assert len(get_popular_tools()) >= 1
     assert get_tool("missing") is None
 
@@ -58,6 +58,6 @@ def test_related_tools():
 
 def test_categories():
     cats = get_categories()
-    expected = ["Generators", "Productivity", "Documents", "Media", "Finance"]
+    expected = ["PDF & Documents", "Images", "Text", "Developer", "Generators", "Calculators", "Productivity", "Finance", "Media"]
     for cat in expected:
         assert cat in cats, f"Category '{cat}' not found"

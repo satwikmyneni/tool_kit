@@ -1,22 +1,14 @@
-{% set is_active = tool.status in ['active', 'available'] %}
 {% set keywords = (tool.keywords or [])|join(' ') %}
-{% if is_active %}
-<a class="tool-card" href="{{ tool.route }}" data-tool-card data-slug="{{ tool.slug }}" data-name="{{ tool.name|lower }}" data-description="{{ tool.description|lower }}" data-category="{{ tool.category|lower }}" data-keywords="{{ keywords|lower }}">
-{% else %}
-<article class="tool-card tool-card--soon" data-tool-card data-slug="{{ tool.slug }}" data-name="{{ tool.name|lower }}" data-description="{{ tool.description|lower }}" data-category="{{ tool.category|lower }}" data-keywords="{{ keywords|lower }}">
-{% endif %}
+<article class="tool-card" data-tool-card data-slug="{{ tool.slug }}" data-name="{{ tool.name|lower }}" data-description="{{ tool.description|lower }}" data-category="{{ tool.category|lower }}" data-keywords="{{ keywords|lower }}">
   <div class="tool-card-icon" aria-hidden="true">
-    <img src="{{ url_for('static', filename='icons/' + tool.icon + '.svg') }}" alt="" width="24" height="24">
+    <img src="{{ url_for('static', filename='icons/' + tool.icon + '.svg') }}" alt="" width="24" height="24" loading="lazy">
   </div>
   <div class="tool-card-body">
     <div class="tool-card-heading">
-      <h3>{{ tool.name }}</h3>
+      <h3><a class="tool-card-link" href="{{ tool.route }}">{{ tool.name }}</a></h3>
+      <button class="favorite-button" type="button" data-favorite="{{ tool.slug }}" aria-label="Add {{ tool.name }} to favorites" aria-pressed="false">☆</button>
     </div>
     <p>{{ tool.description }}</p>
-    <p class="tool-card-meta">{{ tool.category }}</p>
+    <p class="tool-card-meta">{{ tool.category }} · {{ tool.processing }}</p>
   </div>
-{% if is_active %}
-</a>
-{% else %}
 </article>
-{% endif %}

@@ -13,7 +13,9 @@
       <ul>
         <li><a href="{{ url_for('main.index') }}" {% if request.path == '/' %}aria-current="page"{% endif %}>Home</a></li>
         <li><a href="{{ url_for('main.tools') }}" {% if request.path.startswith('/tools') %}aria-current="page"{% endif %}>Tools</a></li>
+        <li><a href="{{ url_for('main.tools') }}#categories">Categories</a></li>
         <li><a href="{{ url_for('main.about') }}" {% if request.path == '/about' %}aria-current="page"{% endif %}>About &amp; data</a></li>
+        <li><button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch color theme" aria-pressed="false">Theme</button></li>
       </ul>
     </nav>
   </div>
