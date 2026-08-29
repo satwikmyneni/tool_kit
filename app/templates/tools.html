@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-intro">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="{{ url_for('main.index') }}">Home</a>
+      <span aria-hidden="true">/</span>
+      <span>Tools</span>
+    </nav>
+    <h1>All tools</h1>
+    <p class="lead">Browse eight focused utilities for codes, documents, media, productivity, and personal finance.</p>
+    <label class="field-label" for="tool-search">Search tools</label>
+    <input class="field-input" id="tool-search" type="search" placeholder="Filter tools" autocomplete="off" data-tool-search>
+    <p class="muted" data-search-status role="status" aria-live="polite"></p>
+    <div class="category-list directory-categories" aria-label="Tool categories">
+      {% for category in tools_by_category %}
+      <a class="category-chip" href="#category-{{ category|lower|replace(' ', '-') }}">{{ category }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% for category, category_tools in tools_by_category.items() %}
+    <div class="category-block" id="category-{{ category|lower|replace(' ', '-') }}">
+      <h2>{{ category }}</h2>
+      <div class="tool-grid" data-tool-grid>
+        {% for tool in category_tools %}
+          {% include "partials/tool_card.html" %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="empty-state" data-search-empty hidden>
+      <p>No tools match that search.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

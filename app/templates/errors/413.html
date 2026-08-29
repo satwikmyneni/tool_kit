@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}File too large — Toolbox{% endblock %}
+{% block meta_description %}The file you uploaded is larger than the allowed limit.{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+  <div class="container narrow">
+    <h1>File too large</h1>
+    <p class="lead">That file exceeds the upload limit. Try a smaller file and try again.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">Back to home</a>
+  </div>
+</section>
+{% endblock %}

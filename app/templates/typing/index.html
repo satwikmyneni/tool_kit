@@ -1,0 +1,46 @@
+{% extends "tool_page.html" %}
+
+{% block tool_main %}
+<div class="tool-panel" id="typing-app">
+  <div class="field">
+    <label class="field-label" for="typing-duration">Duration</label>
+    <select class="field-select" id="typing-duration">
+      <option value="15">15 seconds</option>
+      <option value="30">30 seconds</option>
+      <option value="60" selected>60 seconds</option>
+      <option value="120">120 seconds</option>
+    </select>
+  </div>
+  <p class="typing-timer" aria-live="polite"><span data-timer>60</span>s</p>
+  <p class="field-hint" data-typing-status aria-live="polite">Choose a duration and press Start.</p>
+  <div class="typing-passage" data-passage aria-label="Text to type" aria-readonly="true"></div>
+  <label class="field-label" for="typing-input">Typing area</label>
+  <textarea class="field-textarea typing-input" id="typing-input" rows="5" spellcheck="false" autocomplete="off" autocapitalize="off" disabled placeholder="Press start, then type here."></textarea>
+  <ul class="stat-row" aria-label="Live results">
+    <li><strong data-wpm>0</strong> WPM</li>
+    <li><strong data-accuracy>100%</strong> accuracy</li>
+    <li><strong data-chars>0</strong> characters</li>
+    <li><strong data-correct>0</strong> correct</li>
+    <li><strong data-errors>0</strong> errors</li>
+  </ul>
+  <div class="tool-actions">
+    <button class="btn btn-primary" type="button" data-start>Start</button>
+    <button class="btn btn-ghost" type="button" data-retry hidden>Retry</button>
+    <button class="btn btn-ghost" type="button" data-reset-test hidden>Reset</button>
+  </div>
+  <div class="result-panel" data-complete hidden>
+    <h2>Results</h2>
+    <p data-complete-summary></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<h2>About this tool</h2>
+<p>The typing test runs entirely in your browser. Keystrokes are not sent to the server. WPM uses the standard of five characters per word.</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/typing-core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/typing.js') }}"></script>
+{% endblock %}

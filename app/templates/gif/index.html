@@ -1,0 +1,62 @@
+{% extends "tool_page.html" %}
+{% set container_class = "tool-wide" %}
+
+{% block tool_main %}
+<div class="tool-panel">
+  <form id="gif-form" data-tool-form data-max-files="{{ limits.gif_frames }}" data-max-bytes="{{ limits.image_bytes }}">
+    <div class="upload-area" data-dropzone>
+      <label class="field-label" for="gif-files">Images</label>
+      <p>Upload 2–{{ limits.gif_frames }} PNG, JPEG, or WEBP images, each up to {{ (limits.image_bytes / 1048576)|round|int }} MB. Reorder the frames before generating.</p>
+      <input class="field-input" id="gif-files" name="files" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple>
+    </div>
+    <ul class="thumb-list" data-file-list aria-live="polite"></ul>
+    <div class="field-grid">
+      <div class="field">
+        <label class="field-label" for="gif-duration">Frame duration (ms)</label>
+        <input class="field-input" id="gif-duration" name="duration" type="number" min="50" max="2000" value="400">
+      </div>
+      <div class="field">
+        <label class="field-label" for="gif-width">Output width</label>
+        <input class="field-input" id="gif-width" name="width" type="number" min="120" max="{{ limits.image_edge }}" value="480">
+      </div>
+      <div class="field">
+        <label class="field-label" for="gif-height">Output height</label>
+        <input class="field-input" id="gif-height" name="height" type="number" min="120" max="{{ limits.image_edge }}" value="320">
+      </div>
+      <div class="field">
+        <label class="field-label" for="gif-loop">Loop</label>
+        <select class="field-select" id="gif-loop" name="loop">
+          <option value="1" selected>Loop forever</option>
+          <option value="0">Play once</option>
+        </select>
+      </div>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-primary" type="submit" data-submit>Create GIF</button>
+      <button class="btn btn-ghost" type="button" data-reset>Reset</button>
+    </div>
+  </form>
+  <p class="loading" data-loading hidden role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Creating GIF...</span>
+  </p>
+  <div class="alert alert-error" data-error hidden role="alert"></div>
+  <div class="result-panel" data-result hidden aria-live="polite">
+    <h2>Preview</h2>
+    <img data-preview alt="Generated GIF animation">
+    <div class="tool-actions">
+      <a class="btn btn-primary" data-download download="toolbox-animation.gif">Download GIF</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<h2>About this tool</h2>
+<p>Images are uploaded, resized to a shared canvas, and encoded as a GIF on the server. Temporary files are not kept after the animation is returned.</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/gif.js') }}"></script>
+{% endblock %}

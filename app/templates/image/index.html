@@ -1,0 +1,50 @@
+{% extends "tool_page.html" %}
+
+{% block tool_main %}
+<div class="tool-panel">
+  <form id="image-form" data-tool-form data-max-bytes="{{ limits.image_bytes }}">
+    <div class="upload-area" data-dropzone>
+      <label class="field-label" for="image-file">Image</label>
+      <p>Upload a PNG, JPEG, or WEBP photo up to {{ (limits.image_bytes / 1048576)|round|int }} MB and {{ limits.image_edge }} px per edge. Processing uses a local machine-learning model on the server and can take several seconds.</p>
+      <input class="field-input" id="image-file" name="image" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" required>
+    </div>
+    <div class="preview-row" data-original-wrap hidden>
+      <figure>
+        <figcaption>Original</figcaption>
+        <img data-original alt="Original image">
+      </figure>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-primary" type="submit" data-submit>Remove background</button>
+      <button class="btn btn-ghost" type="button" data-reset>Reset</button>
+    </div>
+  </form>
+  <p class="loading" data-loading hidden role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Removing background...</span>
+  </p>
+  <div class="alert alert-error" data-error hidden role="alert"></div>
+  <div class="result-panel" data-result hidden aria-live="polite">
+    <h2>Result</h2>
+    <div class="preview-row">
+      <figure>
+        <figcaption>Transparent PNG</figcaption>
+        <img class="checkerboard" data-preview alt="Image with background removed">
+      </figure>
+    </div>
+    <div class="tool-actions">
+      <a class="btn btn-primary" data-download download="background-removed.png">Download PNG</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<h2>About this tool</h2>
+<p>The image is processed on the server with the rembg model (CPU by default). Files are not stored after processing. The first run on a new server may download the model weights. See the README if this tool reports that the model could not start.</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/image.js') }}"></script>
+{% endblock %}

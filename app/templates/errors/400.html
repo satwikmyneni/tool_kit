@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Request expired — Toolbox{% endblock %}
+{% block meta_description %}Refresh the page before submitting the form again.{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+  <div class="container narrow">
+    <h1>Request expired</h1>
+    <p class="lead">{{ message or "Refresh the page and try again." }}</p>
+    <a class="btn btn-primary" href="{{ request.path }}">Refresh this page</a>
+  </div>
+</section>
+{% endblock %}

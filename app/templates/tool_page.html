@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title or (tool.name ~ " — Toolbox") }}{% endblock %}
+
+{% block content %}
+{% set width = container_class|default("tool-standard") %}
+<section class="page-intro">
+  <div class="container {{ width }}">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="{{ url_for('main.tools') }}">All tools</a>
+      <span aria-hidden="true">/</span>
+      <span>{{ tool.name }}</span>
+    </nav>
+    <h1>{{ tool.name }}</h1>
+    <p class="lead">{{ tool.description }}</p>
+  </div>
+</section>
+
+<section class="section section-tool">
+  <div class="container {{ width }}">
+    <div class="tool-layout">
+      {% block tool_main %}{% endblock %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container {{ width }}">
+    {% block tool_info %}{% endblock %}
+  </div>
+</section>
+
+{% if related_tools %}
+<section class="section related-tools">
+  <div class="container {{ width }}">
+    <h2>Related tools</h2>
+    <div class="tool-grid tool-grid-related">
+      {% for tool in related_tools %}
+        {% include "partials/tool_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="page-intro">
+  <div class="container narrow">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="{{ url_for('main.index') }}">Home</a>
+      <span aria-hidden="true">/</span>
+      <span>About</span>
+    </nav>
+    <h1>About Toolbox</h1>
+    <p class="lead">Simple tools for everyday tasks. No account is required.</p>
+  </div>
+</section>
+
+<section class="section" id="data">
+  <div class="container narrow">
+    <h2>How we handle data</h2>
+    <p>Toolbox is designed so you can finish a small job without creating a profile. We do not require login, and we do not keep a user history of your inputs.</p>
+
+    <h3>Runs in your browser</h3>
+    <ul class="plain-list">
+      <li>Typing Speed Test — keystrokes stay on your device.</li>
+      <li>Expense Tracker — transactions are saved in localStorage on this browser only.</li>
+    </ul>
+
+    <h3>Processed on the Toolbox server</h3>
+    <p>These tools upload input so Python can generate a file. Uploads use generated temporary names, are validated, and are not published as public URLs. Temporary data is deleted after processing when it is safe to do so.</p>
+    <ul class="plain-list">
+      <li>QR Code Generator</li>
+      <li>Barcode Generator</li>
+      <li>PDF Merger</li>
+      <li>Image Background Remover</li>
+      <li>GIF Maker</li>
+    </ul>
+
+    <h3>External provider</h3>
+    <p>Text to Speech uses gTTS, which sends the text you submit to Google to synthesize audio. Do not enter confidential text in that tool. Toolbox does not store the text after the MP3 is returned.</p>
+
+    <h3>What we do not do</h3>
+    <p>We do not sell accounts, payments, or invasive analytics in this version. Server logs may record technical errors for debugging. They are not a product analytics profile.</p>
+  </div>
+</section>
+{% endblock %}

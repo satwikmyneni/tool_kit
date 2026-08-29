@@ -1,0 +1,117 @@
+{% extends "tool_page.html" %}
+{% set container_class = "tool-wide" %}
+
+{% block tool_main %}
+<div class="tool-panel expense-app" id="expense-app">
+  <p class="alert" role="note">Your expense data is stored locally in your browser. It is not sent to Toolbox servers.</p>
+  <div class="expense-toolbar">
+    <div class="field">
+      <label class="field-label" for="expense-currency">Currency</label>
+      <select class="field-select" id="expense-currency">
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+        <option value="INR" selected>INR</option>
+        <option value="JPY">JPY</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="expense-month">Month</label>
+      <input class="field-input" id="expense-month" type="month">
+    </div>
+  </div>
+  <div class="stat-grid" aria-live="polite">
+    <div class="stat-card"><p class="muted">Income</p><p class="stat-value" data-income>0</p></div>
+    <div class="stat-card"><p class="muted">Expenses</p><p class="stat-value" data-expense>0</p></div>
+    <div class="stat-card"><p class="muted">Balance</p><p class="stat-value" data-balance>0</p></div>
+    <div class="stat-card"><p class="muted">Current month</p><p class="stat-value stat-value-small" data-current-month>—</p></div>
+  </div>
+  <h2>Add transaction</h2>
+  <form id="expense-form">
+    <div class="field-grid">
+      <div class="field">
+        <label class="field-label" for="tx-type">Type</label>
+        <select class="field-select" id="tx-type" required>
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="tx-amount">Amount</label>
+        <input class="field-input" id="tx-amount" type="number" min="0.01" step="0.01" required>
+      </div>
+      <div class="field">
+        <label class="field-label" for="tx-category">Category</label>
+        <select class="field-select" id="tx-category" required></select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="tx-date">Date</label>
+        <input class="field-input" id="tx-date" type="date" required>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="tx-note">Description</label>
+      <input class="field-input" id="tx-note" type="text" maxlength="120" placeholder="Optional note">
+    </div>
+    <div class="field">
+      <label class="field-label" for="tx-custom">Custom category</label>
+      <input class="field-input" id="tx-custom" type="text" maxlength="40" placeholder="Used when you choose Other, or type a new name">
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-primary" type="submit" data-save>Save transaction</button>
+      <button class="btn btn-ghost" type="button" data-cancel-edit hidden>Cancel edit</button>
+    </div>
+  </form>
+  <h2>Spending by category</h2>
+  <div class="chart" data-chart></div>
+  <h2>Recent transactions</h2>
+  <div class="field-grid">
+    <div class="field">
+      <label class="field-label" for="filter-type">Type filter</label>
+      <select class="field-select" id="filter-type">
+        <option value="all">All</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="filter-category">Category filter</label>
+      <select class="field-select" id="filter-category"></select>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Type</th>
+          <th scope="col">Category</th>
+          <th scope="col">Description</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody data-rows></tbody>
+    </table>
+  </div>
+  <p class="empty-state" data-empty hidden>No transactions in this view.</p>
+  <div class="tool-actions">
+    <button class="btn btn-secondary" type="button" data-export>Export CSV</button>
+    <label class="btn btn-secondary file-btn">Import CSV
+      <input id="expense-import" type="file" accept=".csv,text/csv" hidden>
+    </label>
+    <button class="btn btn-ghost" type="button" data-clear>Clear all data</button>
+    <button class="btn btn-ghost" type="button" data-reset>Reset form</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<h2>About this tool</h2>
+<p>Everything is stored locally in your browser. Clearing site data, using another device, or switching browsers will not keep this ledger. Export CSV if you need a backup.</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/expense-core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/expense.js') }}"></script>
+{% endblock %}

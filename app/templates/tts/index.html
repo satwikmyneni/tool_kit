@@ -1,0 +1,59 @@
+{% extends "tool_page.html" %}
+
+{% block tool_main %}
+<div class="tool-panel">
+  <div class="alert" role="note">
+    Text is sent to Google’s unofficial text-to-speech service (gTTS) to generate audio. Do not enter confidential text.
+  </div>
+  <form id="tts-form" data-tool-form>
+    <div class="field">
+      <label class="field-label" for="tts-text">Text</label>
+      <textarea class="field-textarea" id="tts-text" name="text" required maxlength="{{ limits.tts_chars }}" aria-describedby="tts-count" placeholder="Type or paste text to hear it spoken."></textarea>
+      <p class="field-hint" id="tts-count"><span data-count>0</span> / {{ limits.tts_chars }} characters</p>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="field-label" for="tts-lang">Language</label>
+        <select class="field-select" id="tts-lang" name="lang">
+          {% for code, label in languages.items() %}
+          <option value="{{ code }}" {% if code == 'en' %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="tts-speed">Speed</label>
+        <select class="field-select" id="tts-speed" name="speed">
+          <option value="normal" selected>Normal</option>
+          <option value="slow">Slow</option>
+        </select>
+      </div>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-primary" type="submit" data-submit>Generate audio</button>
+      <button class="btn btn-ghost" type="button" data-reset>Reset</button>
+    </div>
+  </form>
+  <p class="loading" data-loading hidden role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Generating audio...</span>
+  </p>
+  <div class="alert alert-error" data-error hidden role="alert"></div>
+  <div class="result-panel" data-result hidden aria-live="polite">
+    <h2>Audio</h2>
+    <audio data-audio controls></audio>
+    <div class="tool-actions">
+      <a class="btn btn-primary" data-download download="toolbox-speech.mp3">Download MP3</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<h2>About this tool</h2>
+<p>Speech is generated with gTTS, which sends your text to Google to synthesize an MP3. Toolbox does not keep the text after the audio file is returned. This is not a private, fully local voice engine.</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tts.js') }}"></script>
+{% endblock %}

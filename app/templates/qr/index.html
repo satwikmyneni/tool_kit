@@ -1,0 +1,68 @@
+{% extends "tool_page.html" %}
+
+{% block tool_main %}
+<div class="tool-panel">
+  <form id="qr-form" data-tool-form>
+    <div class="field">
+      <label class="field-label" for="qr-text">Text or URL</label>
+      <textarea class="field-textarea" id="qr-text" name="text" required maxlength="{{ limits.qr_chars }}" aria-describedby="qr-count" placeholder="https://example.com or any text"></textarea>
+      <p class="field-hint" id="qr-count"><span data-count>0</span> / {{ limits.qr_chars }} characters</p>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="field-label" for="qr-size">Size</label>
+        <input class="field-input" id="qr-size" name="size" type="number" min="4" max="20" value="10">
+      </div>
+      <div class="field">
+        <label class="field-label" for="qr-margin">Margin</label>
+        <input class="field-input" id="qr-margin" name="margin" type="number" min="1" max="10" value="4">
+      </div>
+      <div class="field">
+        <label class="field-label" for="qr-error">Error correction</label>
+        <select class="field-select" id="qr-error" name="error_correction">
+          <option value="L">Low</option>
+          <option value="M" selected>Medium</option>
+          <option value="Q">Quartile</option>
+          <option value="H">High</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label class="field-label" for="qr-fill">Foreground</label>
+        <input class="field-input" id="qr-fill" name="fill_color" type="color" value="#000000">
+      </div>
+      <div class="field">
+        <label class="field-label" for="qr-back">Background</label>
+        <input class="field-input" id="qr-back" name="back_color" type="color" value="#ffffff">
+      </div>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-primary" type="submit" data-submit>Generate QR code</button>
+      <button class="btn btn-ghost" type="button" data-reset>Reset</button>
+    </div>
+  </form>
+  <p class="loading" data-loading hidden role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Generating QR code...</span>
+  </p>
+  <div class="alert alert-error" data-error hidden role="alert"></div>
+  <div class="result-panel" data-result hidden aria-live="polite">
+    <h2>Preview</h2>
+    <img data-preview alt="Generated QR code">
+    <div class="tool-actions">
+      <a class="btn btn-primary" data-download download="toolbox-qr-code.png">Download PNG</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<h2>About this tool</h2>
+<p>QR codes are generated on the server from the text you submit. Toolbox does not keep a history of QR contents after the image is returned.</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/qr.js') }}"></script>
+{% endblock %}

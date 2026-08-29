@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Too many requests — Toolbox{% endblock %}
+{% block meta_description %}Please wait before using this tool again.{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+  <div class="container narrow">
+    <h1>Too many requests</h1>
+    <p class="lead">This tool is busy. Please wait a moment and try again.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.tools') }}">View tools</a>
+  </div>
+</section>
+{% endblock %}

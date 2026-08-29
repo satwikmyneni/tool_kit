@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found — Toolbox{% endblock %}
+{% block meta_description %}The page you requested could not be found.{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+  <div class="container narrow">
+    <h1>Page not found</h1>
+    <p class="lead">That URL does not match a Toolbox page. Check the address or return to the tool directory.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.tools') }}">View tools</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <p class="eyebrow">Toolbox</p>
+    <h1>Simple tools for everyday tasks.</h1>
+    <p class="lead">Fast, focused utilities you can use in the browser. No account required.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('main.tools') }}">Browse tools</a>
+      <a class="btn btn-secondary" href="{{ url_for('main.about') }}#data">How we handle data</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="search">
+  <div class="container">
+    <label class="field-label" for="tool-search">Search tools</label>
+    <input class="field-input" id="tool-search" type="search" name="q" placeholder="Search by name or task" autocomplete="off" data-tool-search>
+    <p class="muted" data-search-status role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+<section class="section" id="popular">
+  <div class="container">
+    <h2>Popular tools</h2>
+    <div class="tool-grid" data-tool-grid>
+      {% for tool in popular_tools %}
+        {% include "partials/tool_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="categories">
+  <div class="container">
+    <h2>Categories</h2>
+    <div class="category-list">
+      {% for category in categories %}
+      <a class="category-chip" href="#category-{{ category|lower|replace(' ', '-') }}">{{ category }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="all-tools">
+  <div class="container">
+    <h2>All tools</h2>
+    {% for category, category_tools in tools_by_category.items() %}
+    <div class="category-block" id="category-{{ category|lower|replace(' ', '-') }}">
+      <h3>{{ category }}</h3>
+      <div class="tool-grid" data-tool-grid>
+        {% for tool in category_tools %}
+          {% include "partials/tool_card.html" %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="empty-state" data-search-empty hidden>
+      <p>No tools match that search.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-privacy" id="privacy">
+  <div class="container narrow">
+    <h2>Private by default</h2>
+    <p>Toolbox is built for small jobs you should not need an account to finish. The typing test and expense tracker stay in your browser. Tools that need server processing handle submissions in memory or temporary storage and do not expose them as public downloads.</p>
+    <p>We do not require sign-up for the core utilities, and we do not collect keystrokes or browsing history from these tools.</p>
+  </div>
+</section>
+{% endblock %}

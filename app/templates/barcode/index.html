@@ -1,0 +1,40 @@
+{% extends "tool_page.html" %}
+
+{% block tool_main %}
+<div class="tool-panel">
+  <form id="barcode-form" data-tool-form>
+    <div class="field">
+      <label class="field-label" for="barcode-text">Barcode value</label>
+      <input class="field-input" id="barcode-text" name="text" type="text" required maxlength="{{ limits.barcode_chars }}" aria-describedby="barcode-help barcode-count" placeholder="SKU, ID, or short text" autocomplete="off">
+      <p class="field-hint" id="barcode-help">Code 128 can encode letters, numbers, and common ASCII characters.</p>
+      <p class="field-hint" id="barcode-count"><span data-count>0</span> / {{ limits.barcode_chars }} characters</p>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-primary" type="submit" data-submit>Generate barcode</button>
+      <button class="btn btn-ghost" type="button" data-reset>Reset</button>
+    </div>
+  </form>
+  <p class="loading" data-loading hidden role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Generating barcode...</span>
+  </p>
+  <div class="alert alert-error" data-error hidden role="alert"></div>
+  <div class="result-panel" data-result hidden aria-live="polite">
+    <h2>Preview</h2>
+    <img data-preview alt="Generated barcode">
+    <div class="tool-actions">
+      <a class="btn btn-primary" data-download download="toolbox-barcode.png">Download PNG</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tool_info %}
+<h2>About this tool</h2>
+<p>Barcodes are created on the server as Code 128 images. Submitted values are not stored after the barcode is generated.</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tool-common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/barcode.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ page_title or "Toolbox" }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ meta_description or "Simple tools for everyday tasks." }}{% endblock %}">
+  <link rel="canonical" href="{{ base_url }}{{ canonical_path }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Toolbox">
+  <meta property="og:title" content="{{ page_title or "Toolbox" }}">
+  <meta property="og:description" content="{{ meta_description or "Simple tools for everyday tasks." }}">
+  <meta property="og:url" content="{{ base_url }}{{ canonical_path }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tools.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% include "partials/header.html" %}
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "partials/footer.html" %}
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
