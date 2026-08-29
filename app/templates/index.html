@@ -1,36 +1,60 @@
 {% extends "base.html" %}
 
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">{% endblock %}
+
 {% block content %}
-<section class="hero">
+{% set category_icons = {
+  "PDF & Documents": "pdf",
+  "Images": "image",
+  "Text": "keyboard",
+  "Developer": "barcode",
+  "Generators": "qr",
+  "Calculators": "wallet",
+  "Productivity": "keyboard",
+  "Finance": "wallet",
+  "Media": "speech"
+} %}
+
+<section class="home-category-section" aria-label="Browse tool categories">
   <div class="container">
-    <p class="eyebrow">Toolbox</p>
-    <h1>Simple tools for everyday tasks.</h1>
-    <p class="lead">Fast, focused utilities you can use in the browser. No account required.</p>
+    <nav class="home-category-launcher" id="categories" aria-label="Tool categories">
+      {% for category in categories %}
+      <a class="home-category-item{% if loop.first %} is-active{% endif %}" href="/{{ category_info[category][0] }}"{% if loop.first %} aria-current="true"{% endif %}>
+        <span class="home-category-icon" aria-hidden="true"><img src="{{ url_for('static', filename='icons/' + category_icons[category] + '.svg') }}" alt="" width="22" height="22"></span>
+        <span>{{ category }}</span>
+      </a>
+      {% endfor %}
+    </nav>
+  </div>
+</section>
+
+<section class="home-hero">
+  <div class="container home-hero-inner">
+    <h1>Simple <span>tools</span> for everyday tasks.</h1>
+    <p>Fast, focused utilities you can use in the browser. No account required.</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="{{ url_for('main.tools') }}">Browse tools</a>
+      <a class="btn btn-primary" href="{{ url_for('main.tools') }}">Browse tools <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       <a class="btn btn-secondary" href="{{ url_for('main.about') }}#data">How we handle data</a>
     </div>
   </div>
 </section>
 
-<section class="section personalized-tools" data-personalized hidden>
+<section class="home-personalized" data-personalized hidden>
   <div class="container">
-    <div data-favorites-section hidden><h2>Your favorites</h2><div class="tool-grid" data-favorites-grid></div></div>
-    <div data-recent-section hidden><h2>Recently used</h2><div class="tool-grid" data-recent-grid></div></div>
+    <div class="home-personalized-block" id="recently-used" data-recent-section hidden>
+      <div class="home-section-heading"><h2>Recently used</h2><a href="{{ url_for('main.tools') }}">View all <span aria-hidden="true">→</span></a></div>
+      <div class="tool-grid home-featured-grid" data-recent-grid data-limit="3"></div>
+    </div>
+    <div class="home-personalized-block" id="favorites" data-favorites-section hidden>
+      <div class="home-section-heading"><h2>Favorites</h2><a href="{{ url_for('main.tools') }}">View all <span aria-hidden="true">→</span></a></div>
+      <div class="tool-grid home-featured-grid" data-favorites-grid data-limit="3"></div>
+    </div>
   </div>
 </section>
 
-<section class="section" id="search">
+<section class="section home-tools-section home-popular-section" id="popular" data-search-group>
   <div class="container">
-    <label class="field-label" for="tool-search">Search tools</label>
-    <input class="field-input" id="tool-search" type="search" name="q" placeholder="Search by name or task" autocomplete="off" data-tool-search>
-    <p class="muted" data-search-status role="status" aria-live="polite"></p>
-  </div>
-</section>
-
-<section class="section" id="popular">
-  <div class="container">
-    <h2>Popular tools</h2>
+    <div class="home-section-heading"><h2>Popular tools</h2><a href="{{ url_for('main.tools') }}">View all <span aria-hidden="true">→</span></a></div>
     <div class="tool-grid" data-tool-grid>
       {% for tool in popular_tools %}
         {% include "partials/tool_card.html" %}
@@ -39,22 +63,11 @@
   </div>
 </section>
 
-<section class="section" id="categories">
+<section class="section home-tools-section" id="home-tools">
   <div class="container">
-    <h2>Categories</h2>
-    <div class="category-list">
-      {% for category in categories %}
-      <a class="category-chip" href="/{{ category_info[category][0] }}">{{ category }}</a>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<section class="section" id="all-tools">
-  <div class="container">
-    <h2>All tools</h2>
+    <div class="home-section-heading"><h2>All tools</h2></div>
     {% for category, category_tools in tools_by_category.items() %}
-    <div class="category-block" id="category-{{ category|lower|replace(' ', '-') }}">
+    <div class="category-block" id="category-{{ category|lower|replace(' ', '-') }}" data-search-group>
       <h3>{{ category }}</h3>
       <div class="tool-grid" data-tool-grid>
         {% for tool in category_tools %}
@@ -63,16 +76,15 @@
       </div>
     </div>
     {% endfor %}
-    <div class="empty-state" data-search-empty hidden>
-      <p>No tools match that search.</p>
-    </div>
+    <div class="empty-state" data-search-empty hidden><p>No tools match that search.</p></div>
+    <p class="visually-hidden" data-search-status role="status" aria-live="polite"></p>
   </div>
 </section>
 
 <section class="section section-privacy" id="privacy">
   <div class="container narrow">
     <h2>Private by default</h2>
-    <p>Toolbox is built for small jobs you should not need an account to finish. The typing test and expense tracker stay in your browser. Tools that need server processing handle submissions in memory or temporary storage and do not expose them as public downloads.</p>
+    <p>Toolbox is built for small jobs you should not need an account to finish. Browser-local tools stay on your device, while server tools use bounded temporary processing and never expose uploads as public downloads.</p>
     <p>We do not require sign-up for the core utilities, and we do not collect keystrokes or browsing history from these tools.</p>
   </div>
 </section>

@@ -19,8 +19,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tools.css') }}">
+  {% block styles %}{% endblock %}
 </head>
-<body data-tool-slug="{{ tool.slug if tool is defined and tool else '' }}" data-analytics-provider="{{ analytics_provider }}">
+<body class="{{ 'home-page' if request.path == '/' else '' }}" data-tool-slug="{{ tool.slug if tool is defined and tool else '' }}" data-analytics-provider="{{ analytics_provider }}">
   <a class="skip-link" href="#main">Skip to content</a>
   {% include "partials/header.html" %}
   <main id="main">

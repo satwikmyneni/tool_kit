@@ -16,6 +16,20 @@ def test_homepage_ok(client):
     assert b"Private by default" in response.data
 
 
+def test_homepage_reference_layout_order_and_navigation(client):
+    response = client.get("/")
+    html = response.get_data(as_text=True)
+    assert 'class="home-page"' in html
+    assert 'class="home-category-launcher"' in html
+    assert html.index("home-category-launcher") < html.index("home-hero")
+    assert "Browse by category" not in html
+    assert html.count("home-category-item") == 9
+    assert 'placeholder="Search tools..."' in html
+    assert 'href="#favorites"' in html
+    assert 'href="#recently-used"' in html
+    assert '<span>tools</span>' in html
+
+
 def test_tools_directory_ok(client):
     response = client.get("/tools")
     assert response.status_code == 200

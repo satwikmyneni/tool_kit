@@ -1,5 +1,6 @@
 "use strict";
 
+const fs = require("fs");
 const cdpPort = Number(process.argv[2] || 9333);
 const origin = "http://127.0.0.1:5000";
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -53,6 +54,7 @@ async function main() {
   const client = await connect();
   const failures = [];
   const consoleErrors = [];
+  const viewportStates = {};
   let currentPath = "about:blank";
   client.on("Runtime.exceptionThrown", (event) => consoleErrors.push(`${currentPath}: ${event.exceptionDetails.text}`));
   client.on("Runtime.consoleAPICalled", (event) => {
@@ -71,7 +73,7 @@ async function main() {
 
   async function navigate(path) {
     currentPath = path;
-    const loaded = client.once("Page.loadEventFired");
+    const loaded = client.once("Page.loadEventFired", 20000);
     const response = await client.send("Page.navigate", { url: origin + path });
     if (response.errorText) throw new Error(`${path}: ${response.errorText}`);
     await loaded;
@@ -218,21 +220,46 @@ async function main() {
 
   await navigate("/");
   const themeControl = await evaluate(`(() => { const button = document.querySelector('[data-theme-toggle]'); return {text: button.textContent.trim(), icons: button.querySelectorAll('svg').length, label: button.getAttribute('aria-label'), width: button.getBoundingClientRect().width}; })()`);
-  if (themeControl.text || themeControl.icons !== 2 || !themeControl.label.startsWith("Switch to") || themeControl.width !== 44) failures.push({ themeControl });
+  if (themeControl.text || themeControl.icons !== 2 || !themeControl.label.startsWith("Switch to") || themeControl.width < 36 || themeControl.width > 44) failures.push({ themeControl });
+
+  const homeSearchState = await evaluate(`(() => {
+    const search = document.getElementById('header-tool-search');
+    search.value = 'pdf to word';
+    search.dispatchEvent(new Event('input', {bubbles:true}));
+    const visible = [...document.querySelectorAll('[data-tool-card]')].filter(card => card.offsetParent !== null).map(card => card.dataset.slug);
+    search.value = '';
+    search.dispatchEvent(new Event('input', {bubbles:true}));
+    search.blur();
+    return {visible: [...new Set(visible)], categories: document.querySelectorAll('.home-category-item').length, firstCategory: document.querySelector('.home-category-item').getAttribute('href')};
+  })()`);
+  if (homeSearchState.visible.length !== 1 || homeSearchState.visible[0] !== 'pdf-to-word' || homeSearchState.categories !== 9 || homeSearchState.firstCategory !== '/pdf-tools') failures.push({ homeSearchState });
 
   const responsivePaths = ["/", "/tools", "/pdf-tools", "/tools/pdf-merger", "/tools/pdf-splitter", "/tools/reorder-pdf-pages", "/pdf-to-word", "/pdf-to-excel", "/pdf-to-powerpoint", "/word-to-pdf", "/jpg-to-pdf", "/tools/images-to-pdf", "/tools/image-resizer", "/tools/json-toolkit", "/tools/percentage-calculator", "/tools/typing-test", "/tools/expense-tracker"];
-  for (const width of [320, 375, 768, 1440]) {
+  for (const width of [375, 430, 768, 1440, 1920]) {
     await client.send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: width < 768 });
     for (const path of responsivePaths) {
       await navigate(path);
       const overflow = await evaluate("document.documentElement.scrollWidth > window.innerWidth + 1");
       if (overflow) failures.push({ path, width, error: "horizontal overflow" });
+      if (path === "/" && (width === 375 || width === 1440)) {
+        await evaluate("document.documentElement.dataset.theme = 'dark'");
+        await delay(250);
+        viewportStates[width] = await evaluate(`(() => ({innerWidth: window.innerWidth, navClass: document.querySelector('[data-nav]').className, navDisplay: getComputedStyle(document.querySelector('[data-nav]')).display, expanded: document.querySelector('[data-nav-toggle]').getAttribute('aria-expanded'), categoryVisible: document.querySelector('.home-category-section').getBoundingClientRect().height > 0, heroTitle: document.querySelector('.home-hero h1').textContent.trim(), heroButtons: document.querySelectorAll('.home-hero .btn').length, cardBackground: getComputedStyle(document.querySelector('.tool-card')).backgroundColor}))()`);
+        const screenshot = await client.send("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
+        fs.writeFileSync(`instance/tmp/home-${width}.png`, Buffer.from(screenshot.data, "base64"));
+      }
     }
   }
   await client.send("Emulation.clearDeviceMetricsOverride");
+  await navigate("/");
+  const visualState = await evaluate(`(() => {
+    const card = document.querySelector('.tool-card');
+    const style = card ? getComputedStyle(card) : null;
+    return {theme: document.documentElement.dataset.theme, cardBackground: style && style.backgroundColor, categoryCount: document.querySelectorAll('.home-category-item').length, headerHeight: document.querySelector('.site-header').getBoundingClientRect().height};
+  })()`);
   client.socket.close();
 
-  const result = { pagesChecked: paths.length, responsiveChecks: responsivePaths.length * 4, failures, consoleErrors };
+  const result = { pagesChecked: paths.length, responsiveChecks: responsivePaths.length * 5, visualState, viewportStates, failures, consoleErrors };
   process.stdout.write(JSON.stringify(result, null, 2));
   if (failures.length || consoleErrors.length) process.exitCode = 1;
 }

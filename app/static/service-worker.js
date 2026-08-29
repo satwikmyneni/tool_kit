@@ -1,8 +1,9 @@
-const CACHE_NAME = "toolbox-static-v2";
+const CACHE_NAME = "toolbox-static-v6";
 const STATIC_ASSETS = [
   "/static/css/main.css",
   "/static/css/components.css",
   "/static/css/tools.css",
+  "/static/css/homepage.css",
   "/static/js/main.js",
   "/static/icons/logo.svg",
   "/static/icons/favicon.svg"

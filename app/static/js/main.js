@@ -40,6 +40,8 @@
   var nav = document.querySelector("[data-nav]");
   var navToggle = document.querySelector("[data-nav-toggle]");
   if (nav && navToggle) {
+    nav.classList.remove("is-open");
+    navToggle.setAttribute("aria-expanded", "false");
     navToggle.addEventListener("click", function () {
       var open = nav.classList.toggle("is-open");
       navToggle.setAttribute("aria-expanded", open ? "true" : "false");
@@ -49,7 +51,8 @@
   var preferences = readJSON(KEYS.preferences, {});
   if (!preferences || typeof preferences !== "object" || Array.isArray(preferences)) preferences = {};
   var systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  var theme = preferences.theme === "dark" || preferences.theme === "light" ? preferences.theme : (systemDark ? "dark" : "light");
+  var homepage = document.body && document.body.classList.contains("home-page");
+  var theme = preferences.theme === "dark" || preferences.theme === "light" ? preferences.theme : (homepage || systemDark ? "dark" : "light");
   document.documentElement.dataset.theme = theme;
   var themeButton = document.querySelector("[data-theme-toggle]");
   function renderThemeButton() {
@@ -76,8 +79,10 @@
   function renderFavorites() {
     document.querySelectorAll("[data-favorite]").forEach(function (button) {
       var selected = favoriteSlugs.indexOf(button.dataset.favorite) !== -1;
-      button.textContent = selected ? "★" : "☆";
       button.setAttribute("aria-pressed", selected ? "true" : "false");
+      button.classList.toggle("is-favorite", selected);
+      var star = button.querySelector(".favorite-star path");
+      if (star) star.setAttribute("fill", selected ? "currentColor" : "none");
       button.setAttribute("aria-label", (selected ? "Remove " : "Add ") + button.dataset.favorite.replace(/-/g, " ") + (selected ? " from favorites" : " to favorites"));
     });
   }
@@ -115,7 +120,9 @@
     if (!grid) return 0;
     grid.innerHTML = "";
     var count = 0;
+    var limit = Number(grid.dataset.limit || 0);
     slugs.forEach(function (slug) {
+      if (limit && count >= limit) return;
       var card = firstCard(slug);
       if (!card) return;
       var clone = card.cloneNode(true);
@@ -160,12 +167,19 @@
       blocks.forEach(function (block) {
         block.hidden = block.querySelectorAll("[data-tool-card]:not([hidden])").length === 0;
       });
+      document.querySelectorAll("[data-search-group]").forEach(function (group) {
+        group.hidden = group.querySelectorAll("[data-tool-card]:not([hidden])").length === 0;
+      });
       if (empty) empty.hidden = visibleSlugs.size !== 0;
       if (status) status.textContent = !query ? "" : (visibleSlugs.size ? visibleSlugs.size + (visibleSlugs.size === 1 ? " tool found." : " tools found.") : "No matching tools.");
     }
     search.addEventListener("input", filterTools);
     document.addEventListener("keydown", function (event) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        search.focus();
+      }
+      if (event.key === "/" && !event.ctrlKey && !event.metaKey && !event.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) {
         event.preventDefault();
         search.focus();
       }

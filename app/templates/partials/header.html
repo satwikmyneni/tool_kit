@@ -1,16 +1,29 @@
-<header class="site-header">
+<header class="site-header{% if request.path == '/' %} homepage-header{% endif %}">
   <div class="container header-inner">
     <a class="logo" href="{{ url_for('main.index') }}">
       <img src="{{ url_for('static', filename='icons/logo.svg') }}" alt="" width="28" height="28">
-      <span>Toolbox</span>
+      <span>{{ "TOOLBOX" if request.path == "/" else "Toolbox" }}</span>
     </a>
     <nav id="site-nav" class="site-nav" data-nav>
       <ul>
-        <li><a href="{{ url_for('main.index') }}" {% if request.path == '/' %}aria-current="page"{% endif %}>Home</a></li>
-        <li><a href="{{ url_for('main.tools') }}" {% if request.path.startswith('/tools') %}aria-current="page"{% endif %}>Tools</a></li>
-        <li><a href="{{ url_for('main.tools') }}#categories">Categories</a></li>
+        <li><a href="{{ url_for('main.index') }}" {% if request.path == '/' %}aria-current="page"{% endif %}>{% if request.path == '/' %}<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>{% endif %}<span>Home</span></a></li>
+        <li><a href="{{ url_for('main.tools') }}" {% if request.path.startswith('/tools') %}aria-current="page"{% endif %}>{% if request.path == '/' %}<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="4" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="14" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>{% endif %}<span>Tools</span></a></li>
+        <li><a href="{{ url_for('main.index') if request.path == '/' else url_for('main.tools') }}#categories">{% if request.path == '/' %}<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v5H4zm9 0h7v5h-7zM4 13h7v5H4zm9 0h7v5h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>{% endif %}<span>Categories</span></a></li>
+        {% if request.path == '/' %}
+        <li><a href="#favorites"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>Favorites</span></a></li>
+        <li><a href="#recently-used"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Recently Used</span></a></li>
+        {% else %}
         <li><a href="{{ url_for('main.about') }}" {% if request.path == '/about' %}aria-current="page"{% endif %}>About &amp; data</a></li>
+        {% endif %}
       </ul>
+      {% if request.path == '/' %}
+      <label class="home-header-search" for="header-tool-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="visually-hidden">Search tools</span>
+        <input id="header-tool-search" type="search" placeholder="Search tools..." autocomplete="off" data-tool-search>
+        <kbd>Ctrl K</kbd>
+      </label>
+      {% endif %}
     </nav>
     <div class="header-actions">
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark theme" aria-pressed="false">
