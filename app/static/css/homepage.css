@@ -80,7 +80,7 @@
 :root[data-theme="dark"] .home-page .tool-card { background: #121a24; }
 .home-page .tool-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border)); background: color-mix(in srgb, var(--color-surface) 95%, var(--color-accent)); }
 .home-page .tool-card-icon { flex-basis: 40px; width: 40px; height: 40px; }
-.home-page .tool-card-icon img { width: 20px; height: 20px; }
+.home-page .tool-card-icon img { width: 24px; height: 24px; }
 .home-page .tool-card-heading { padding-right: 2rem; margin-bottom: 0.45rem; }
 .home-page .tool-card-heading h3 { font-size: 0.98rem; }
 .home-page .tool-card-body > p:not(.tool-card-meta) { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 0.82rem; line-height: 1.45; }
@@ -90,10 +90,13 @@
 .home-page .tool-card-meta { position: absolute; left: 4.85rem; bottom: 0.9rem; margin: 0; }
 .home-page .tool-category-badge { display: inline-flex; min-height: 23px; align-items: center; padding: 0 0.5rem; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-bg); color: var(--color-muted); font-size: 0.68rem; font-weight: 650; }
 .home-page .tool-processing-label { display: none; }
-.tool-card-arrow { display: none; }
-.home-page .tool-card-arrow { position: absolute; right: 0.8rem; bottom: 0.85rem; width: 24px; height: 24px; display: grid; place-items: center; color: var(--color-muted); opacity: 0.45; transition: color 170ms ease, opacity 170ms ease, transform 170ms ease; }
-.home-page .tool-card-arrow svg { width: 16px; height: 16px; }
-.home-page .tool-card:hover .tool-card-arrow { color: var(--color-accent); opacity: 1; transform: translateX(2px); }
+/* Keep PDF cards aligned with the homepage's compact horizontal card pattern. */
+.home-page .tool-card[data-category="pdf & documents"] { display: flex; }
+.home-page .tool-card[data-category="pdf & documents"] .tool-card-icon { width: 40px; height: 40px; margin-bottom: 0; }
+.home-page .tool-card[data-category="pdf & documents"] .tool-card-icon img { width: 24px; height: 24px; }
+.home-page .tool-card[data-category="pdf & documents"] .favorite-button { top: 0.65rem; right: 0.65rem; }
+.home-page .tool-card[data-category="pdf & documents"] .tool-card-heading { padding-right: 2rem; }
+.home-page .tool-card[data-category="pdf & documents"] .tool-card-meta { position: absolute; left: 4.85rem; bottom: 0.9rem; margin: 0; }
 
 @media (min-width: 768px) and (max-width: 1099px) {
   .homepage-header .nav-toggle { display: inline-flex; }

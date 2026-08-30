@@ -1,4 +1,4 @@
-const CACHE_NAME = "toolbox-static-v6";
+const CACHE_NAME = "toolbox-static-v10";
 const STATIC_ASSETS = [
   "/static/css/main.css",
   "/static/css/components.css",

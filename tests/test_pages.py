@@ -58,6 +58,43 @@ def test_all_category_pages_load(client):
         assert b"Tool category" in response.data
 
 
+def test_pdf_directory_uses_unique_tool_icons_without_card_arrows(client):
+    from app.registry import get_tools_by_category
+
+    pdf_tools = get_tools_by_category()["PDF & Documents"]
+    icons = [tool["icon"] for tool in pdf_tools]
+    html = client.get("/pdf-tools").get_data(as_text=True)
+
+    assert len(icons) == len(set(icons))
+    assert "pdf" not in icons
+    assert "tool-card-arrow" not in html
+    for tool in pdf_tools:
+        icon_path = f"/static/icons/{tool['icon']}.svg"
+        assert icon_path in html
+        assert client.get(icon_path).status_code == 200
+
+
+def test_tool_cards_never_render_decorative_arrows(client):
+    for path in ["/", "/tools", "/pdf-tools", "/image-tools", "/text-tools", "/developer-tools", "/generators", "/calculators", "/productivity-tools", "/finance-tools", "/media-tools"]:
+        html = client.get(path).get_data(as_text=True)
+        assert "tool-card-arrow" not in html, f"Decorative card arrow rendered on {path}"
+
+
+def test_every_tool_uses_a_unique_available_icon(client):
+    from app.registry import get_tools
+
+    tools = get_tools()
+    icons = [tool["icon"] for tool in tools]
+    html = client.get("/tools").get_data(as_text=True)
+
+    assert len(tools) == 95
+    assert len(icons) == len(set(icons))
+    for tool in tools:
+        icon_path = f"/static/icons/{tool['icon']}.svg"
+        assert icon_path in html
+        assert client.get(icon_path).status_code == 200
+
+
 def test_pwa_manifest_and_service_worker_are_public_asset_only(client):
     manifest = client.get("/static/site.webmanifest")
     worker = client.get("/service-worker.js")

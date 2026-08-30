@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke="#0f5c4c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="5" width="7" height="9" rx="1"/><rect x="12.5" y="5" width="7" height="9" rx="1"/><rect x="22" y="5" width="7" height="9" rx="1"/>
+  <rect x="3" y="19" width="7" height="9" rx="1"/><rect x="12.5" y="19" width="7" height="9" rx="1"/><rect x="22" y="19" width="7" height="9" rx="1"/>
+  <path d="m7.5 16 2 2 2-2M24.5 18l-2-2-2 2"/>
+  <text x="5.1" y="11.6" fill="#0f5c4c" stroke="none" font-family="Arial,sans-serif" font-size="5" font-weight="700">1</text><text x="14.6" y="11.6" fill="#0f5c4c" stroke="none" font-family="Arial,sans-serif" font-size="5" font-weight="700">2</text><text x="24.1" y="11.6" fill="#0f5c4c" stroke="none" font-family="Arial,sans-serif" font-size="5" font-weight="700">3</text>
+  <text x="5.1" y="25.6" fill="#0f5c4c" stroke="none" font-family="Arial,sans-serif" font-size="5" font-weight="700">3</text><text x="14.6" y="25.6" fill="#0f5c4c" stroke="none" font-family="Arial,sans-serif" font-size="5" font-weight="700">1</text><text x="24.1" y="25.6" fill="#0f5c4c" stroke="none" font-family="Arial,sans-serif" font-size="5" font-weight="700">2</text>
+</svg>

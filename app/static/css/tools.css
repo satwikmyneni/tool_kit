@@ -26,7 +26,7 @@
 .tool-card-link { color: var(--color-ink); text-decoration: none; }
 .tool-card-link::after { content: ""; position: absolute; inset: 0; z-index: 1; }
 .tool-card { position: relative; }
-.favorite-button { position: relative; z-index: 2; margin-left: auto; border: 0; background: transparent; color: var(--color-accent); min-width: 44px; min-height: 44px; font-size: 1.35rem; cursor: pointer; }
+.favorite-button { position: absolute; top: var(--space-4); right: var(--space-4); z-index: 2; margin-left: 0; border: 0; background: transparent; color: var(--color-accent); min-width: 44px; min-height: 44px; font-size: 1.35rem; cursor: pointer; }
 .heading-link { color: var(--color-ink); text-decoration: none; }
 .personalized-tools [data-recent-section] { margin-top: var(--space-6); }
 .processing-note { margin-top: var(--space-3); color: var(--color-muted); }
@@ -57,9 +57,9 @@
 @media (min-width: 768px) { .content-grid { grid-template-columns: 1fr 1fr; } }
 
 .tool-card-icon {
-  flex: 0 0 44px;
-  width: 44px;
-  height: 44px;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-sm);
   background: var(--color-accent-soft);
   display: grid;
@@ -67,8 +67,12 @@
 }
 
 .tool-card-icon img {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
+}
+
+:root[data-theme="dark"] .tool-card-icon img {
+  filter: brightness(0) saturate(100%) invert(82%) sepia(19%) saturate(1017%) hue-rotate(108deg) brightness(92%) contrast(90%);
 }
 
 .tool-card-heading {
@@ -76,6 +80,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  padding-right: 2.75rem;
   margin-bottom: var(--space-2);
 }
 
@@ -86,6 +91,38 @@
 .tool-card-meta {
   margin-top: var(--space-3);
   font-size: 0.85rem;
+}
+
+/* PDF cards use operation-specific artwork and a compact top-to-bottom rhythm. */
+.tool-card[data-category="pdf & documents"] {
+  display: block;
+  padding: var(--space-5);
+}
+
+.tool-card[data-category="pdf & documents"] .tool-card-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-4);
+}
+
+.tool-card[data-category="pdf & documents"] .tool-card-icon img {
+  width: 30px;
+  height: 30px;
+}
+
+.tool-card[data-category="pdf & documents"] .tool-card-heading {
+  padding-right: 2.75rem;
+}
+
+.tool-card[data-category="pdf & documents"] .favorite-button {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  margin-left: 0;
+}
+
+.tool-card[data-category="pdf & documents"] .tool-card-body > p:not(.tool-card-meta) {
+  line-height: 1.5;
 }
 
 .category-block + .category-block {

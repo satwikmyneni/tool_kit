@@ -55,6 +55,8 @@ async function main() {
   const failures = [];
   const consoleErrors = [];
   const viewportStates = {};
+  const pdfViewportStates = {};
+  const iconCategoryStates = {};
   let currentPath = "about:blank";
   client.on("Runtime.exceptionThrown", (event) => consoleErrors.push(`${currentPath}: ${event.exceptionDetails.text}`));
   client.on("Runtime.consoleAPICalled", (event) => {
@@ -137,6 +139,26 @@ async function main() {
   })()`);
   if (!discovery.visible.includes("json-toolkit") || discovery.visible.some((slug) => !["json-toolkit", "jwt-decoder"].includes(slug)) || !discovery.favorite || !["light", "dark"].includes(discovery.theme)) failures.push({ discovery });
 
+  await navigate("/tools");
+  const allToolIconState = await evaluate(`(async () => {
+    const cards = [...document.querySelectorAll('[data-tool-card]')];
+    const icons = cards.map(card => card.querySelector('.tool-card-icon img'));
+    const iconResponses = await Promise.all(icons.map(icon => fetch(icon.src).then(response => response.ok)));
+    document.documentElement.dataset.theme = 'light';
+    const lightSize = icons[0].getBoundingClientRect().width;
+    document.documentElement.dataset.theme = 'dark';
+    return {
+      cards: cards.length,
+      uniqueTools: new Set(cards.map(card => card.dataset.slug)).size,
+      uniqueIcons: new Set(icons.map(icon => icon.getAttribute('src'))).size,
+      iconsLoaded: iconResponses.every(Boolean),
+      arrows: document.querySelectorAll('.tool-card-arrow').length,
+      lightSize,
+      darkFilter: getComputedStyle(icons[0]).filter
+    };
+  })()`);
+  if (allToolIconState.uniqueTools !== 95 || allToolIconState.uniqueIcons !== allToolIconState.uniqueTools || !allToolIconState.iconsLoaded || allToolIconState.arrows !== 0 || allToolIconState.lightSize !== 30 || allToolIconState.darkFilter === "none") failures.push({ allToolIconState });
+
   await navigate("/tools/json-toolkit");
   const jsonResult = await evaluate(`(() => {
     document.getElementById('dev-input').value = '{"ok":true,"items":[1,2]}';
@@ -164,6 +186,36 @@ async function main() {
   await navigate("/");
   const personalized = await evaluate(`({recent: !document.querySelector('[data-recent-section]').hidden, favorite: !document.querySelector('[data-favorites-section]').hidden})`);
   if (!personalized.recent || !personalized.favorite) failures.push({ personalized });
+
+  await navigate("/pdf-tools");
+  const pdfCardState = await evaluate(`(async () => {
+    const cards = [...document.querySelectorAll('[data-tool-card]')];
+    const icons = cards.map(card => card.querySelector('.tool-card-icon img'));
+    const iconResponses = await Promise.all(icons.map(icon => fetch(icon.src).then(response => response.ok)));
+    const favorite = cards[0].querySelector('[data-favorite]');
+    favorite.click();
+    document.documentElement.dataset.theme = 'light';
+    const light = {
+      background: getComputedStyle(cards[0]).backgroundColor,
+      iconBackground: getComputedStyle(cards[0].querySelector('.tool-card-icon')).backgroundColor
+    };
+    document.documentElement.dataset.theme = 'dark';
+    const dark = {
+      background: getComputedStyle(cards[0]).backgroundColor,
+      iconFilter: getComputedStyle(icons[0]).filter
+    };
+    return {
+      count: cards.length,
+      arrows: cards.reduce((count, card) => count + card.querySelectorAll('.tool-card-arrow').length, 0),
+      uniqueIcons: new Set(icons.map(icon => icon.getAttribute('src'))).size,
+      iconsLoaded: iconResponses.every(Boolean),
+      links: cards.every(card => card.querySelector('.tool-card-link')?.href.startsWith(location.origin + '/')),
+      favorite: JSON.parse(localStorage.getItem('toolbox_favorite_tools') || '[]').includes(cards[0].dataset.slug),
+      light,
+      dark
+    };
+  })()`);
+  if (pdfCardState.count !== 22 || pdfCardState.arrows !== 0 || pdfCardState.uniqueIcons !== pdfCardState.count || !pdfCardState.iconsLoaded || !pdfCardState.links || !pdfCardState.favorite || pdfCardState.dark.iconFilter === "none") failures.push({ pdfCardState });
 
   await navigate("/tools/pdf-splitter");
   await attachSamplePdfs("#utility-files");
@@ -234,7 +286,7 @@ async function main() {
   })()`);
   if (homeSearchState.visible.length !== 1 || homeSearchState.visible[0] !== 'pdf-to-word' || homeSearchState.categories !== 9 || homeSearchState.firstCategory !== '/pdf-tools') failures.push({ homeSearchState });
 
-  const responsivePaths = ["/", "/tools", "/pdf-tools", "/tools/pdf-merger", "/tools/pdf-splitter", "/tools/reorder-pdf-pages", "/pdf-to-word", "/pdf-to-excel", "/pdf-to-powerpoint", "/word-to-pdf", "/jpg-to-pdf", "/tools/images-to-pdf", "/tools/image-resizer", "/tools/json-toolkit", "/tools/percentage-calculator", "/tools/typing-test", "/tools/expense-tracker"];
+  const responsivePaths = ["/", "/tools", "/pdf-tools", "/image-tools", "/text-tools", "/developer-tools", "/generators", "/calculators", "/productivity-tools", "/finance-tools", "/media-tools", "/tools/pdf-merger", "/tools/pdf-splitter", "/tools/reorder-pdf-pages", "/pdf-to-word", "/pdf-to-excel", "/pdf-to-powerpoint", "/word-to-pdf", "/jpg-to-pdf", "/tools/images-to-pdf", "/tools/image-resizer", "/tools/json-toolkit", "/tools/percentage-calculator", "/tools/typing-test", "/tools/expense-tracker"];
   for (const width of [375, 430, 768, 1440, 1920]) {
     await client.send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: width < 768 });
     for (const path of responsivePaths) {
@@ -248,6 +300,22 @@ async function main() {
         const screenshot = await client.send("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
         fs.writeFileSync(`instance/tmp/home-${width}.png`, Buffer.from(screenshot.data, "base64"));
       }
+      if (path === "/pdf-tools" && (width === 375 || width === 1440)) {
+        const theme = width === 375 ? "light" : "dark";
+        await evaluate(`document.documentElement.dataset.theme = ${JSON.stringify(theme)}`);
+        await delay(100);
+        pdfViewportStates[width] = await evaluate(`(() => { const cards = [...document.querySelectorAll('[data-tool-card]')]; const first = cards[0]; return {theme: document.documentElement.dataset.theme, cards: cards.length, arrows: document.querySelectorAll('.tool-card-arrow').length, firstWidth: first.getBoundingClientRect().width, firstHeight: first.getBoundingClientRect().height, iconWidth: first.querySelector('.tool-card-icon').getBoundingClientRect().width, favoriteVisible: first.querySelector('.favorite-button').getBoundingClientRect().width > 0}; })()`);
+        const screenshot = await client.send("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
+        fs.writeFileSync(`instance/tmp/pdf-tools-${width}.png`, Buffer.from(screenshot.data, "base64"));
+      }
+      if (width === 1440 && ["/image-tools", "/developer-tools", "/calculators", "/productivity-tools"].includes(path)) {
+        const theme = ["/developer-tools", "/productivity-tools"].includes(path) ? "dark" : "light";
+        await evaluate(`document.documentElement.dataset.theme = ${JSON.stringify(theme)}`);
+        await delay(100);
+        iconCategoryStates[path] = await evaluate(`(() => { const cards = [...document.querySelectorAll('[data-tool-card]')]; const icons = cards.map(card => card.querySelector('.tool-card-icon img')); return {theme: document.documentElement.dataset.theme, cards: cards.length, uniqueIcons: new Set(icons.map(icon => icon.src)).size, iconWidths: [...new Set(icons.map(icon => icon.getBoundingClientRect().width))], arrows: document.querySelectorAll('.tool-card-arrow').length}; })()`);
+        const screenshot = await client.send("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
+        fs.writeFileSync(`instance/tmp/icon-category-${path.slice(1)}.png`, Buffer.from(screenshot.data, "base64"));
+      }
     }
   }
   await client.send("Emulation.clearDeviceMetricsOverride");
@@ -259,7 +327,7 @@ async function main() {
   })()`);
   client.socket.close();
 
-  const result = { pagesChecked: paths.length, responsiveChecks: responsivePaths.length * 5, visualState, viewportStates, failures, consoleErrors };
+  const result = { pagesChecked: paths.length, responsiveChecks: responsivePaths.length * 5, visualState, viewportStates, allToolIconState, pdfCardState, pdfViewportStates, iconCategoryStates, failures, consoleErrors };
   process.stdout.write(JSON.stringify(result, null, 2));
   if (failures.length || consoleErrors.length) process.exitCode = 1;
 }

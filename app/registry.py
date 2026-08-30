@@ -27,7 +27,7 @@ def _tool(slug, name, category, description, icon, keywords, processing="client"
         "category": category,
         "route": f"/tools/{slug}",
         "description": description,
-        "icon": icon,
+        "icon": icon if category == "PDF & Documents" else f"tool-{slug}",
         "status": STATUS_AVAILABLE,
         "popular": popular == "yes",
         "popularity": 100 if popular == "yes" else 50,
@@ -42,28 +42,28 @@ def _tool(slug, name, category, description, icon, keywords, processing="client"
 
 # slug|name|category|description|icon|keywords|processing|client group|popular|related
 _DATA = """
-pdf-merger|PDF Merger|PDF & Documents|Combine multiple PDF files in the order you choose.|pdf|pdf,merge,combine,document|server||yes|pdf-splitter,pdf-compressor,images-to-pdf
-pdf-splitter|PDF Splitter|PDF & Documents|Extract selected pages, page ranges, or every page into a ZIP.|pdf|pdf,split,extract,pages,zip|server||yes|pdf-merger,extract-pdf-pages,pdf-compressor
-pdf-compressor|PDF Compressor|PDF & Documents|Apply honest lossless PDF stream and object compression.|pdf|pdf,compress,optimize,reduce,size|server||yes|pdf-merger,pdf-splitter,pdf-inspector
-images-to-pdf|Images to PDF|PDF & Documents|Turn ordered PNG, JPEG, or WEBP images into one PDF.|pdf|image,jpg,jpeg,png,webp,pdf|server||yes|pdf-merger,image-resizer,image-compressor
-rotate-pdf|Rotate PDF|PDF & Documents|Rotate all pages or a selected page range in a PDF.|pdf|pdf,rotate,pages,orientation|server|||reorder-pdf-pages,delete-pdf-pages
-delete-pdf-pages|Delete PDF Pages|PDF & Documents|Remove selected pages and download the remaining PDF.|pdf|pdf,delete,remove,pages|server|||extract-pdf-pages,reorder-pdf-pages
-extract-pdf-pages|Extract PDF Pages|PDF & Documents|Create a new PDF from selected pages in their original order.|pdf|pdf,extract,page,selection|server|||pdf-splitter,delete-pdf-pages
-reorder-pdf-pages|Reorder PDF Pages|PDF & Documents|Create a PDF using a custom page order, including duplicates.|pdf|pdf,reorder,organize,pages|server|||rotate-pdf,extract-pdf-pages
-pdf-metadata|PDF Metadata Editor|PDF & Documents|View document information and download a copy with updated metadata.|pdf|pdf,metadata,title,author,editor|server|||pdf-inspector,pdf-compressor
-protect-pdf|Protect PDF|PDF & Documents|Encrypt a PDF with a password required for opening it.|pdf|pdf,password,encrypt,protect|server|||unlock-pdf,pdf-inspector
-unlock-pdf|Unlock PDF|PDF & Documents|Remove encryption from a PDF when you provide its correct password.|pdf|pdf,password,decrypt,unlock|server|||protect-pdf,pdf-inspector
-pdf-inspector|PDF Inspector & Validator|PDF & Documents|Validate a PDF and inspect pages, encryption, metadata, and file size.|pdf|pdf,inspect,validate,information,repair|server|||pdf-metadata,pdf-compressor
-pdf-to-jpg|PDF to JPG|PDF & Documents|Render selected PDF pages as high-quality JPG images.|pdf|pdf,jpg,jpeg,image,convert,export|server||yes|pdf-to-png,pdf-to-powerpoint,image-compressor
-pdf-to-png|PDF to PNG|PDF & Documents|Render selected PDF pages as lossless PNG images.|pdf|pdf,png,image,convert,export|server|||pdf-to-jpg,pdf-to-powerpoint,image-compressor
-pdf-to-word|PDF to Word|PDF & Documents|Extract PDF text and supported images into a practical DOCX document.|pdf|pdf,word,docx,convert,text,document|server||yes|word-to-pdf,pdf-to-excel,pdf-to-powerpoint
-pdf-to-excel|PDF to Excel|PDF & Documents|Detect structured PDF tables and export them into an XLSX workbook.|pdf|pdf,excel,xlsx,table,convert,spreadsheet|server|||excel-to-pdf,pdf-to-word,pdf-to-powerpoint
-pdf-to-powerpoint|PDF to PowerPoint|PDF & Documents|Place each PDF page faithfully onto a PowerPoint slide.|pdf|pdf,powerpoint,pptx,slides,convert,presentation|server|||powerpoint-to-pdf,pdf-to-word,pdf-to-png
-word-to-pdf|Word to PDF|PDF & Documents|Convert DOC or DOCX documents to PDF with the server's LibreOffice engine.|pdf|word,doc,docx,pdf,convert,libreoffice|server|||pdf-to-word,excel-to-pdf,powerpoint-to-pdf
-excel-to-pdf|Excel to PDF|PDF & Documents|Convert XLS or XLSX spreadsheets to PDF with the server's LibreOffice engine.|pdf|excel,xls,xlsx,pdf,convert,libreoffice|server|||pdf-to-excel,word-to-pdf,powerpoint-to-pdf
-powerpoint-to-pdf|PowerPoint to PDF|PDF & Documents|Convert PPT or PPTX presentations to PDF with the server's LibreOffice engine.|pdf|powerpoint,ppt,pptx,pdf,convert,libreoffice|server|||pdf-to-powerpoint,word-to-pdf,excel-to-pdf
-jpg-to-pdf|JPG to PDF|PDF & Documents|Combine ordered JPG images into a configurable PDF document.|pdf|jpg,jpeg,image,pdf,convert,combine|server|||png-to-pdf,images-to-pdf,pdf-to-jpg
-png-to-pdf|PNG to PDF|PDF & Documents|Combine ordered PNG images into a configurable PDF document.|pdf|png,image,pdf,convert,combine|server|||jpg-to-pdf,images-to-pdf,pdf-to-png
+pdf-merger|PDF Merger|PDF & Documents|Combine multiple PDF files in the order you choose.|pdf-merge|pdf,merge,combine,document|server||yes|pdf-splitter,pdf-compressor,images-to-pdf
+pdf-splitter|PDF Splitter|PDF & Documents|Extract selected pages, page ranges, or every page into a ZIP.|pdf-split|pdf,split,extract,pages,zip|server||yes|pdf-merger,extract-pdf-pages,pdf-compressor
+pdf-compressor|PDF Compressor|PDF & Documents|Apply honest lossless PDF stream and object compression.|pdf-compress|pdf,compress,optimize,reduce,size|server||yes|pdf-merger,pdf-splitter,pdf-inspector
+images-to-pdf|Images to PDF|PDF & Documents|Turn ordered PNG, JPEG, or WEBP images into one PDF.|images-pdf|image,jpg,jpeg,png,webp,pdf|server||yes|pdf-merger,image-resizer,image-compressor
+rotate-pdf|Rotate PDF|PDF & Documents|Rotate all pages or a selected page range in a PDF.|pdf-rotate|pdf,rotate,pages,orientation|server|||reorder-pdf-pages,delete-pdf-pages
+delete-pdf-pages|Delete PDF Pages|PDF & Documents|Remove selected pages and download the remaining PDF.|pdf-delete|pdf,delete,remove,pages|server|||extract-pdf-pages,reorder-pdf-pages
+extract-pdf-pages|Extract PDF Pages|PDF & Documents|Create a new PDF from selected pages in their original order.|pdf-extract|pdf,extract,page,selection|server|||pdf-splitter,delete-pdf-pages
+reorder-pdf-pages|Reorder PDF Pages|PDF & Documents|Create a PDF using a custom page order, including duplicates.|pdf-reorder|pdf,reorder,organize,pages|server|||rotate-pdf,extract-pdf-pages
+pdf-metadata|PDF Metadata Editor|PDF & Documents|View document information and download a copy with updated metadata.|pdf-metadata|pdf,metadata,title,author,editor|server|||pdf-inspector,pdf-compressor
+protect-pdf|Protect PDF|PDF & Documents|Encrypt a PDF with a password required for opening it.|pdf-lock|pdf,password,encrypt,protect|server|||unlock-pdf,pdf-inspector
+unlock-pdf|Unlock PDF|PDF & Documents|Remove encryption from a PDF when you provide its correct password.|pdf-unlock|pdf,password,decrypt,unlock|server|||protect-pdf,pdf-inspector
+pdf-inspector|PDF Inspector & Validator|PDF & Documents|Validate a PDF and inspect pages, encryption, metadata, and file size.|pdf-inspect|pdf,inspect,validate,information,repair|server|||pdf-metadata,pdf-compressor
+pdf-to-jpg|PDF to JPG|PDF & Documents|Render selected PDF pages as high-quality JPG images.|pdf-jpg|pdf,jpg,jpeg,image,convert,export|server||yes|pdf-to-png,pdf-to-powerpoint,image-compressor
+pdf-to-png|PDF to PNG|PDF & Documents|Render selected PDF pages as lossless PNG images.|pdf-png|pdf,png,image,convert,export|server|||pdf-to-jpg,pdf-to-powerpoint,image-compressor
+pdf-to-word|PDF to Word|PDF & Documents|Extract PDF text and supported images into a practical DOCX document.|pdf-word|pdf,word,docx,convert,text,document|server||yes|word-to-pdf,pdf-to-excel,pdf-to-powerpoint
+pdf-to-excel|PDF to Excel|PDF & Documents|Detect structured PDF tables and export them into an XLSX workbook.|pdf-excel|pdf,excel,xlsx,table,convert,spreadsheet|server|||excel-to-pdf,pdf-to-word,pdf-to-powerpoint
+pdf-to-powerpoint|PDF to PowerPoint|PDF & Documents|Place each PDF page faithfully onto a PowerPoint slide.|pdf-powerpoint|pdf,powerpoint,pptx,slides,convert,presentation|server|||powerpoint-to-pdf,pdf-to-word,pdf-to-png
+word-to-pdf|Word to PDF|PDF & Documents|Convert DOC or DOCX documents to PDF with the server's LibreOffice engine.|word-pdf|word,doc,docx,pdf,convert,libreoffice|server|||pdf-to-word,excel-to-pdf,powerpoint-to-pdf
+excel-to-pdf|Excel to PDF|PDF & Documents|Convert XLS or XLSX spreadsheets to PDF with the server's LibreOffice engine.|excel-pdf|excel,xls,xlsx,pdf,convert,libreoffice|server|||pdf-to-excel,word-to-pdf,powerpoint-to-pdf
+powerpoint-to-pdf|PowerPoint to PDF|PDF & Documents|Convert PPT or PPTX presentations to PDF with the server's LibreOffice engine.|powerpoint-pdf|powerpoint,ppt,pptx,pdf,convert,libreoffice|server|||pdf-to-powerpoint,word-to-pdf,excel-to-pdf
+jpg-to-pdf|JPG to PDF|PDF & Documents|Combine ordered JPG images into a configurable PDF document.|jpg-pdf|jpg,jpeg,image,pdf,convert,combine|server|||png-to-pdf,images-to-pdf,pdf-to-jpg
+png-to-pdf|PNG to PDF|PDF & Documents|Combine ordered PNG images into a configurable PDF document.|png-pdf|png,image,pdf,convert,combine|server|||jpg-to-pdf,images-to-pdf,pdf-to-png
 background-remover|Image Background Remover|Images|Remove an image background and export a transparent PNG.|image|image,background,remove,transparent,png|server||yes|image-resizer,image-compressor,image-converter
 image-compressor|Image Compressor|Images|Compress a PNG, JPEG, or WEBP with explicit quality controls.|image|image,compress,quality,size,webp|server||yes|image-resizer,image-converter,background-remover
 image-resizer|Image Resizer|Images|Resize an image with aspect-ratio and no-upscale controls.|image|image,resize,dimensions,width,height|server||yes|image-compressor,image-converter,images-to-pdf
