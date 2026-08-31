@@ -7,13 +7,16 @@
 <section class="page-intro">
   <div class="container {{ width }}">
     <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="{{ url_for('main.index') }}">Home</a>
+      <span aria-hidden="true">/</span>
       <a href="/{{ category_info.slug }}">{{ category_info.name }}</a>
       <span aria-hidden="true">/</span>
       <span>{{ tool.name }}</span>
     </nav>
     <h1>{{ tool.name }}</h1>
     <p class="lead">{{ tool.description }}</p>
-    <p class="processing-note"><span class="badge">{{ tool.processing }}</span> processing</p>
+    {% set processing_labels = {"client": "In-browser", "server": "Temporary server", "external": "External service"} %}
+    <p class="processing-note"><span class="badge">{{ processing_labels[tool.processing] }}</span> processing</p>
   </div>
 </section>
 

@@ -18,9 +18,71 @@ CATEGORY_INFO = {
     "Media": ("media-tools", "Create GIFs and speech audio or inspect audio files."),
 }
 
+CATEGORY_DETAILS = {
+    "PDF & Documents": {
+        "seo_title": "Free Online PDF & Document Tools | Toolbox",
+        "seo_description": "Merge, split, compress, organize, secure, and convert PDF or Office files with free online document tools and no account required.",
+        "summary": "Choose a focused PDF or document workflow for combining files, organizing pages, exporting content, or converting common Office formats.",
+        "tip": "For the most reliable result, start with the tool that matches the output you need and review its format, size, and page limits before processing.",
+    },
+    "Images": {
+        "seo_title": "Free Online Image Tools - Resize, Compress & Convert | Toolbox",
+        "seo_description": "Resize, compress, crop, rotate, convert, optimize, and inspect PNG, JPEG, or WEBP images with free online image tools.",
+        "summary": "Prepare images for websites, documents, and sharing with precise controls for dimensions, quality, format, orientation, and metadata.",
+        "tip": "Keep PNG or WEBP when transparency matters, and use JPEG for photographs when a smaller file is more important than lossless output.",
+    },
+    "Text": {
+        "seo_title": "Free Online Text Tools - Analyze, Clean & Compare | Toolbox",
+        "seo_description": "Analyze, clean, compare, transform, generate, and preview text with free browser-based tools that require no account.",
+        "summary": "Work with words and documents directly in the browser, from counting and cleanup to case conversion, comparison, and Markdown preview.",
+        "tip": "Text inputs stay in your browser, so these tools are suitable for quick edits without uploading the content to Toolbox.",
+    },
+    "Developer": {
+        "seo_title": "Free Online Developer Tools - JSON, Base64, Regex & More | Toolbox",
+        "seo_description": "Format JSON, encode or decode data, test regex, inspect JWTs, generate hashes, and use other free browser-based developer tools.",
+        "summary": "Handle common development tasks such as formatting, encoding, decoding, validation, hashing, timestamps, URLs, and color conversion.",
+        "tip": "Results are produced by browser APIs; always validate security-sensitive output in the context of the system where you will use it.",
+    },
+    "Generators": {
+        "seo_title": "Free Online Generators - Passwords, UUIDs, QR Codes & More | Toolbox",
+        "seo_description": "Generate passwords, UUIDs, random values, QR codes, barcodes, colors, gradients, and favicons with free online tools.",
+        "summary": "Create practical digital values and assets with focused controls for randomness, identifiers, codes, colors, and small graphics.",
+        "tip": "Browser-based random generators use secure browser randomness where promised; store important generated values safely after copying them.",
+    },
+    "Calculators": {
+        "seo_title": "Free Online Calculators & Unit Converters | Toolbox",
+        "seo_description": "Use free online calculators for percentages, dates, loans, interest, tax, profit, fuel, and common unit conversions.",
+        "summary": "Solve everyday math, date, finance, and measurement questions with calculators that show the values needed for each result.",
+        "tip": "Check the selected unit, period, rate, and rounding assumptions before using a result for an important decision.",
+    },
+    "Productivity": {
+        "seo_title": "Free Online Productivity Tools - Timers, Notes & Lists | Toolbox",
+        "seo_description": "Use free browser-based timers, notes, task lists, habit counters, typing tests, and decision tools without creating an account.",
+        "summary": "Stay focused and organize small tasks with lightweight timers, lists, notes, trackers, tests, and random choice tools.",
+        "tip": "Saved items remain in local browser storage; export or copy anything you need before clearing site data or switching devices.",
+    },
+    "Finance": {
+        "seo_title": "Free Personal Finance Calculators & Planners | Toolbox",
+        "seo_description": "Plan budgets, track expenses, estimate loans and savings, split bills, and calculate currency with free browser-based finance tools.",
+        "summary": "Estimate and organize everyday money decisions with local tools for budgets, spending, savings goals, loans, bills, and exchange rates.",
+        "tip": "These results are planning estimates, not financial advice; confirm current rates, fees, taxes, and lender terms before acting.",
+    },
+    "Media": {
+        "seo_title": "Free Online Media Tools - GIF, Audio & Text to Speech | Toolbox",
+        "seo_description": "Create animated GIFs, inspect audio information, or turn text into speech with focused free online media tools.",
+        "summary": "Handle small audio and animation tasks with a GIF maker, browser-local audio inspection, and downloadable text-to-speech output.",
+        "tip": "Check each tool's processing label: audio inspection stays local, while GIF and speech generation require server or provider processing.",
+    },
+}
+
 
 def _tool(slug, name, category, description, icon, keywords, processing="client",
           group="", popular="", related=""):
+    processing_copy = {
+        "client": "Runs locally in your browser; inputs are not uploaded.",
+        "server": "Files are processed temporarily and not retained.",
+        "external": "Uses an external provider; review the data-handling note.",
+    }[processing]
     return {
         "slug": slug,
         "name": name,
@@ -36,7 +98,7 @@ def _tool(slug, name, category, description, icon, keywords, processing="client"
         "related": [item.strip() for item in related.split(",") if item.strip()],
         "client_group": group or None,
         "seo_title": f"{name} — Free Online Tool | Toolbox",
-        "seo_description": f"{description} Fast, account-free, and privacy-conscious.",
+        "seo_description": f"{description} Free to use with no signup. {processing_copy}",
     }
 
 
@@ -211,7 +273,12 @@ def get_categories():
 def get_category(slug):
     for name, (category_slug, description) in CATEGORY_INFO.items():
         if category_slug == slug:
-            return {"name": name, "slug": category_slug, "description": description}
+            return {
+                "name": name,
+                "slug": category_slug,
+                "description": description,
+                **CATEGORY_DETAILS[name],
+            }
     return None
 
 

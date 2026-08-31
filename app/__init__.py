@@ -10,6 +10,7 @@ from flask_wtf.csrf import CSRFError
 
 from config import get_config
 from app.registry import CATEGORY_INFO, get_tools
+from app.seo import validate_public_base_url
 from app.utils.errors import ToolError
 from app.utils.security import apply_security_headers
 
@@ -42,6 +43,13 @@ def _validate_config(app):
         if not secret or secret == "dev-only-change-me":
             raise RuntimeError(
                 "Production requires SECRET_KEY to be set to a long random value."
+            )
+        if app.config.get("SEO_INDEXING_ENABLED") and not validate_public_base_url(
+            app.config.get("BASE_URL", "")
+        ):
+            raise RuntimeError(
+                "Production SEO requires BASE_URL to be one public HTTPS origin "
+                "such as https://www.example.com."
             )
 
 
@@ -92,6 +100,9 @@ def _register_context(app):
             "base_url": app.config["BASE_URL"],
             "ads_enabled": app.config["ADS_ENABLED"],
             "analytics_provider": app.config["ANALYTICS_PROVIDER"],
+            "seo_indexing_enabled": app.config["SEO_INDEXING_ENABLED"],
+            "google_site_verification": app.config["GOOGLE_SITE_VERIFICATION"],
+            "bing_site_verification": app.config["BING_SITE_VERIFICATION"],
             "limits": {
                 "qr_chars": app.config["MAX_QR_CHARS"],
                 "barcode_chars": app.config["MAX_BARCODE_CHARS"],
@@ -119,33 +130,33 @@ def _register_error_handlers(app):
         message = "Your session expired. Refresh the page and try again."
         if _wants_json() or request.path.startswith("/tools/"):
             return jsonify({"error": message}), 400
-        return render_template("errors/400.html", message=message), 400
+        return render_template("errors/400.html", message=message, robots_policy="noindex,nofollow"), 400
 
     @app.errorhandler(404)
     def not_found(_error):
         if _wants_json():
             return jsonify({"error": "That page could not be found."}), 404
-        return render_template("errors/404.html"), 404
+        return render_template("errors/404.html", robots_policy="noindex,nofollow"), 404
 
     @app.errorhandler(413)
     def too_large(_error):
         message = "That upload is too large. Please use smaller files and try again."
         if _wants_json():
             return jsonify({"error": message}), 413
-        return render_template("errors/413.html"), 413
+        return render_template("errors/413.html", robots_policy="noindex,nofollow"), 413
 
     @app.errorhandler(429)
     def too_many(_error):
         message = "This tool is busy. Please wait a moment and try again."
         if _wants_json():
             return jsonify({"error": message}), 429
-        return render_template("errors/429.html"), 429
+        return render_template("errors/429.html", robots_policy="noindex,nofollow"), 429
 
     @app.errorhandler(ToolError)
     def tool_error(error):
         if _wants_json() or request.path.startswith("/tools/"):
             return jsonify({"error": error.message}), error.status_code
-        return render_template("errors/500.html"), error.status_code
+        return render_template("errors/500.html", robots_policy="noindex,nofollow"), error.status_code
 
     @app.errorhandler(500)
     def server_error(error):
@@ -153,10 +164,18 @@ def _register_error_handlers(app):
         message = "Something went wrong. Please try again."
         if _wants_json():
             return jsonify({"error": message}), 500
-        return render_template("errors/500.html"), 500
+        return render_template("errors/500.html", robots_policy="noindex,nofollow"), 500
 
 
 def _register_security(app):
     @app.after_request
     def set_headers(response):
-        return apply_security_headers(response)
+        response = apply_security_headers(response)
+        response.headers.setdefault("Content-Language", "en")
+        if (
+            response.status_code >= 400
+            or request.method not in {"GET", "HEAD"}
+            or request.path.startswith("/api/")
+        ):
+            response.headers.setdefault("X-Robots-Tag", "noindex, nofollow")
+        return response

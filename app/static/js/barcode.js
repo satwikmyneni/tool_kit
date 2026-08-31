@@ -1,6 +1,3 @@
-/**
- * barcode.js — Barcode Generator tool frontend.
- */
 (function () {
   "use strict";
 

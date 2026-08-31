@@ -29,6 +29,10 @@ class Config:
     ADS_ENABLED = os.environ.get("ADS_ENABLED", "false").lower() == "true"
     ANALYTICS_PROVIDER = os.environ.get("ANALYTICS_PROVIDER", "").strip()
     PRODUCT_TIER = os.environ.get("PRODUCT_TIER", "FREE").upper()
+    SEO_INDEXING_ENABLED = os.environ.get("SEO_INDEXING_ENABLED", "true").lower() == "true"
+    SEO_LASTMOD = os.environ.get("SEO_LASTMOD", "").strip()
+    GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
+    BING_SITE_VERIFICATION = os.environ.get("BING_SITE_VERIFICATION", "").strip()
 
     RATELIMIT_ENABLED = os.environ.get("RATELIMIT_ENABLED", "true").lower() != "false"
     RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
@@ -89,6 +93,7 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     SESSION_COOKIE_SECURE = True
+    BASE_URL = os.environ.get("BASE_URL", "https://www.tools4all.in").rstrip("/")
 
 
 config_by_name = {

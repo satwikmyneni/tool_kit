@@ -1,3 +1,5 @@
+from xml.sax.saxutils import escape
+
 from flask import Blueprint, current_app, render_template, request, url_for
 
 from app.registry import (
@@ -7,8 +9,10 @@ from app.registry import (
     get_category,
     get_categories,
     get_popular_tools,
+    get_tools,
     get_tools_by_category,
 )
+from app.utils.helpers import seo_page_context
 
 bp = Blueprint("main", __name__)
 
@@ -17,23 +21,34 @@ bp = Blueprint("main", __name__)
 def index():
     return render_template(
         "index.html",
-        page_title="Toolbox — Simple tools for everyday tasks",
-        meta_description="Fast, focused, account-free utilities for everyday digital tasks.",
-        canonical_path="/",
         popular_tools=get_popular_tools(),
         categories=get_categories(),
         tools_by_category=get_tools_by_category(),
+        **seo_page_context(
+            "Free Online Tools for PDF, Images, Text & More | Toolbox",
+            "Use free online tools for PDFs, images, text, code, calculators, productivity, finance, and media. Fast results with no account required.",
+            "/",
+        ),
     )
 
 
 @bp.route("/tools")
 def tools():
+    all_tools = get_tools()
     return render_template(
         "tools.html",
-        page_title="All tools — Toolbox",
-        meta_description="Browse free Toolbox utilities for PDFs, images, text, development, calculations, productivity, finance, and media.",
-        canonical_path="/tools",
         tools_by_category=get_tools_by_category(),
+        **seo_page_context(
+            f"{len(all_tools)} Free Online Tools for Everyday Tasks | Toolbox",
+            f"Browse {len(all_tools)} free online tools for PDFs, images, text, development, calculations, productivity, finance, and media. No account required.",
+            "/tools",
+            page_kind="collection",
+            breadcrumbs=[
+                {"name": "Home", "path": "/"},
+                {"name": "All tools", "path": "/tools"},
+            ],
+            items=all_tools,
+        ),
     )
 
 
@@ -62,9 +77,17 @@ def category():
         category_tools=category_tools,
         popular_tools=[tool for tool in category_tools if tool.get("popular")],
         pdf_groups=pdf_groups,
-        page_title=f"{category['name']} — Free Online Tools | Toolbox",
-        meta_description=category["description"],
-        canonical_path=f"/{slug}",
+        **seo_page_context(
+            category["seo_title"],
+            category["seo_description"],
+            f"/{slug}",
+            page_kind="collection",
+            breadcrumbs=[
+                {"name": "Home", "path": "/"},
+                {"name": category["name"], "path": f"/{slug}"},
+            ],
+            items=category_tools,
+        ),
     )
 
 
@@ -72,54 +95,61 @@ def category():
 def about():
     return render_template(
         "about.html",
-        page_title="About and data handling — Toolbox",
-        meta_description="How Toolbox processes files and text, and what stays in your browser.",
-        canonical_path="/about",
+        **seo_page_context(
+            "About Toolbox & How Your Data Is Handled",
+            "Learn how Toolbox handles browser-local inputs, temporary file processing, external services, saved preferences, and technical logs.",
+            "/about",
+            page_kind="about",
+            breadcrumbs=[
+                {"name": "Home", "path": "/"},
+                {"name": "About", "path": "/about"},
+            ],
+        ),
     )
 
 
 @bp.route("/robots.txt")
 def robots():
-    sitemap_url = f"{current_app.config['BASE_URL']}{url_for('main.sitemap')}"
-    body = "\n".join(
-        [
+    if current_app.config["SEO_INDEXING_ENABLED"]:
+        sitemap_url = f"{current_app.config['BASE_URL']}{url_for('main.sitemap')}"
+        lines = [
             "User-agent: *",
             "Allow: /",
+            "Disallow: /api/",
             f"Sitemap: {sitemap_url}",
             "",
         ]
-    )
-    return current_app.response_class(body, mimetype="text/plain")
+    else:
+        lines = ["User-agent: *", "Disallow: /", ""]
+    response = current_app.response_class("\n".join(lines), mimetype="text/plain")
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return response
 
 
 @bp.route("/sitemap.xml")
 def sitemap():
     base = current_app.config["BASE_URL"]
-    pages = [
-        {"loc": f"{base}/", "changefreq": "weekly", "priority": "1.0"},
-        {"loc": f"{base}/tools", "changefreq": "weekly", "priority": "0.8"},
-        {"loc": f"{base}/about", "changefreq": "monthly", "priority": "0.4"},
-    ]
+    pages = [f"{base}/", f"{base}/tools", f"{base}/about"]
     for category_slug, _description in CATEGORY_INFO.values():
-        pages.append({"loc": f"{base}/{category_slug}", "changefreq": "weekly", "priority": "0.8"})
+        pages.append(f"{base}/{category_slug}")
     for path in get_active_tool_urls():
-        pages.append({"loc": f"{base}{path}", "changefreq": "monthly", "priority": "0.7"})
+        pages.append(f"{base}{path}")
+    last_modified = current_app.config.get("SEO_LASTMOD", "")
     xml_items = []
-    for page in pages:
-        xml_items.append(
-            "  <url>\n"
-            f"    <loc>{page['loc']}</loc>\n"
-            f"    <changefreq>{page['changefreq']}</changefreq>\n"
-            f"    <priority>{page['priority']}</priority>\n"
-            "  </url>"
-        )
+    for page_url in pages:
+        fields = [f"    <loc>{escape(page_url)}</loc>"]
+        if last_modified:
+            fields.append(f"    <lastmod>{escape(last_modified)}</lastmod>")
+        xml_items.append("  <url>\n" + "\n".join(fields) + "\n  </url>")
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "\n".join(xml_items)
         + "\n</urlset>\n"
     )
-    return current_app.response_class(xml, mimetype="application/xml")
+    response = current_app.response_class(xml, mimetype="application/xml")
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return response
 
 
 @bp.route("/service-worker.js")

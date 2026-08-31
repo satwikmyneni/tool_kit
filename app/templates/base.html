@@ -5,17 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ page_title or "Toolbox" }}{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ meta_description or "Simple tools for everyday tasks." }}{% endblock %}">
+  <meta name="robots" content="{{ robots_policy|default('index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1' if seo_indexing_enabled else 'noindex,nofollow', true) }}">
+  <meta name="application-name" content="Toolbox">
+  {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}">{% endif %}
+  {% if bing_site_verification %}<meta name="msvalidate.01" content="{{ bing_site_verification }}">{% endif %}
   <link rel="canonical" href="{{ base_url }}{{ canonical_path }}">
   <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_US">
   <meta property="og:site_name" content="Toolbox">
   <meta property="og:title" content="{{ page_title or "Toolbox" }}">
   <meta property="og:description" content="{{ meta_description or "Simple tools for everyday tasks." }}">
   <meta property="og:url" content="{{ base_url }}{{ canonical_path }}">
-  <meta property="og:image" content="{{ base_url }}{{ url_for('static', filename='icons/logo.svg') }}">
+  <meta property="og:image" content="{{ base_url }}{{ url_for('static', filename='social-preview.jpg') }}">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Toolbox — Simple tools for everyday tasks">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page_title or "Toolbox" }}">
+  <meta name="twitter:description" content="{{ meta_description or "Simple tools for everyday tasks." }}">
+  <meta name="twitter:image" content="{{ base_url }}{{ url_for('static', filename='social-preview.jpg') }}">
+  <meta name="twitter:image:alt" content="Toolbox — Simple tools for everyday tasks">
   <meta name="theme-color" content="#176b52">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="icon" href="{{ url_for('static', filename='icons/favicon.svg') }}" type="image/svg+xml">
   <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ url_for('main.sitemap') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tools.css') }}">
@@ -28,15 +43,7 @@
     {% block content %}{% endblock %}
   </main>
   {% include "partials/footer.html" %}
-  <script type="application/ld+json">{{ {
-    "@context": "https://schema.org",
-    "@type": "WebApplication" if tool is defined and tool else "WebSite",
-    "name": tool.name if tool is defined and tool else "Toolbox",
-    "url": base_url ~ canonical_path,
-    "description": meta_description or "Simple tools for everyday tasks.",
-    "applicationCategory": "UtilitiesApplication",
-    "operatingSystem": "Any"
-  }|tojson }}</script>
+  {% if structured_data is defined %}<script type="application/ld+json">{{ structured_data|tojson }}</script>{% endif %}
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>

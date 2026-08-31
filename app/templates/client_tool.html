@@ -11,14 +11,34 @@
 {% endblock %}
 
 {% block tool_info %}
-<div class="content-grid">
+<div class="content-grid tool-explainer">
+  <div>
+    <h2>What {{ tool.name }} does</h2>
+    <p>{{ tool.description }} The focused controls on this page help you complete the task without installing software or creating an account.</p>
+  </div>
   <div>
     <h2>How to use {{ tool.name }}</h2>
-    <p>Enter or choose your values, run the tool, and copy or download the result where available. Reset starts a clean calculation.</p>
+    <ol class="plain-list">
+      {% if tool.category in ["Text", "Developer"] %}
+      <li>Type or paste the content you want to work with.</li>
+      {% elif tool.category in ["Calculators", "Finance"] %}
+      <li>Enter the known values and confirm the units, rate, or period.</li>
+      {% elif tool.category == "Generators" %}
+      <li>Choose the length, format, colors, or other available options.</li>
+      {% else %}
+      <li>Add the values or settings needed for the task.</li>
+      {% endif %}
+      <li>Run the tool and review the result for the intended use.</li>
+      <li>Copy, save, or download the result where that option is available.</li>
+    </ol>
   </div>
   <div>
     <h2>Private browser processing</h2>
     <p>This utility runs in your browser. Toolbox does not send its inputs to the server. Saved state is used only where the tool clearly says so.</p>
+  </div>
+  <div>
+    <h2>Tips for reliable results</h2>
+    <p>{{ category_info.tip }}</p>
   </div>
 </div>
 {% endblock %}

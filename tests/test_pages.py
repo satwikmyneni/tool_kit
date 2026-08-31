@@ -160,6 +160,7 @@ def test_csrf_is_required_and_ajax_errors_are_json(app):
 
 def test_production_config_disables_debug_and_secures_cookies(monkeypatch):
     monkeypatch.setattr(ProductionConfig, "SECRET_KEY", "production-test-secret")
+    monkeypatch.setattr(ProductionConfig, "BASE_URL", "https://tools.example.com")
     production = create_app("production")
     assert production.debug is False
     assert production.config["SESSION_COOKIE_SECURE"] is True
@@ -168,4 +169,11 @@ def test_production_config_disables_debug_and_secures_cookies(monkeypatch):
 def test_production_rejects_development_secret(monkeypatch):
     monkeypatch.setattr(ProductionConfig, "SECRET_KEY", "dev-only-change-me")
     with pytest.raises(RuntimeError, match="Production requires SECRET_KEY"):
+        create_app("production")
+
+
+def test_production_rejects_non_public_canonical_origin(monkeypatch):
+    monkeypatch.setattr(ProductionConfig, "SECRET_KEY", "production-test-secret")
+    monkeypatch.setattr(ProductionConfig, "BASE_URL", "http://127.0.0.1:5000")
+    with pytest.raises(RuntimeError, match="public HTTPS origin"):
         create_app("production")
