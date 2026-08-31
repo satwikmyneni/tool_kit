@@ -11,7 +11,7 @@ def apply_security_headers(response):
         "img-src 'self' data: blob:; "
         "media-src 'self' blob:; "
         "style-src 'self' 'unsafe-inline'; "
-        "script-src 'self'; "
+        "script-src 'self' https://pagead2.googlesyndication.com; "
         "font-src 'self'; "
         "connect-src 'self'; "
         "object-src 'none'; "
